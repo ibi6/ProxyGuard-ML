@@ -1,6 +1,6 @@
-# Contributing to ProxyGuard ML
+# Contributing
 
-Thanks for your interest in improving this project.
+Thanks for helping improve ProxyGuard ML.
 
 ## Development setup
 
@@ -8,19 +8,18 @@ Thanks for your interest in improving this project.
 git clone https://github.com/ibi6/ProxyGuard-ML.git
 cd ProxyGuard-ML
 python -m venv .venv
-
-# Windows PowerShell
-.\.venv\Scripts\Activate.ps1
-
-# macOS / Linux
-source .venv/bin/activate
-
-pip install -U pip
-pip install -r requirements.txt
+source .venv/bin/activate   # Windows: .\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
 pytest -q
 ```
 
-Start the demo console:
+Optional lint:
+
+```bash
+ruff check app tests scripts
+```
+
+Run the console:
 
 ```bash
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
@@ -28,31 +27,27 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 ## Project conventions
 
-| Area | Guideline |
-|------|-----------|
-| Language | Prefer clear English identifiers; Chinese is fine in docs/UI copy |
-| Style | Keep modules small: `api` → `services` → `ml` |
-| Features | Always validate against `FEATURE_COLUMNS` in `app/config.py` |
-| Reproducibility | Default seed is `42`; document any new randomness |
+| Area | Rule |
+|------|------|
+| Layout | `api` thin → `services` orchestrate → `ml` pure-ish |
+| Features | Always validate with `FEATURE_COLUMNS` |
+| Reproducibility | Document seed / noise / n_per_class |
+| Honesty | Do not present mock or synthetic metrics as real PCAP results |
 | Tests | Add/adjust tests under `tests/` for behavior changes |
-| Data honesty | Do not claim real PCAP capture unless you implement it |
 
 ## Pull requests
 
-1. Fork the repo and create a feature branch.
-2. Keep PRs focused (one concern per PR).
-3. Run `pytest -q` before opening the PR.
-4. Fill in the PR template.
+1. Fork + feature branch  
+2. Keep PRs focused  
+3. `pytest -q` must pass  
+4. Fill the PR template  
 
-## What not to commit
+## Do not commit
 
-- `.env`, credentials, tokens
-- Local absolute paths with personal usernames
-- Generated datasets under `data/synthetic/` or `data/uploaded/`
-- Trained `models/*.joblib` (unless intentionally versioned and small)
-- SQLite DB files (`*.db`)
+- `.env`, tokens, personal absolute paths  
+- Generated `data/synthetic`, `models/*.joblib`, `*.db`  
+- Thesis personal binaries with PII  
 
 ## Code of conduct
 
-Be respectful. Assume good intent. No harassment or personal attacks.
-Harassment-free collaboration is required for all participation.
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).

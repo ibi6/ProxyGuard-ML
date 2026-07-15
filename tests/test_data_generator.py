@@ -1,6 +1,6 @@
 from collections import Counter
 
-from app.config import FEATURE_COLUMNS, LABELS
+from app.config import LABELS
 from app.ml.data_generator import generate_synthetic_dataset
 from app.ml.features import validate_feature_frame
 

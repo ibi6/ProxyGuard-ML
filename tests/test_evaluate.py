@@ -7,9 +7,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-
 from app.config import FEATURE_COLUMNS, LABELS
 from app.ml.data_generator import generate_synthetic_dataset
 from app.ml.evaluate import (
@@ -17,6 +14,8 @@ from app.ml.evaluate import (
     export_experiment_figures,
     save_metrics_report,
 )
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
 
 def _tiny_split(seed: int = 42):

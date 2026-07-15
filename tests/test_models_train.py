@@ -6,12 +6,10 @@ from pathlib import Path
 
 import joblib
 import pytest
-
-from app.config import FEATURE_COLUMNS, LABELS, MODELS_DIR
+from app.config import FEATURE_COLUMNS, LABELS
 from app.ml.data_generator import generate_synthetic_dataset
 from app.ml.models import build_model, get_model_zoo
 from app.ml.train import train_all
-
 
 EXPECTED_MODELS = {
     "decision_tree",
@@ -28,7 +26,7 @@ EXPECTED_MODELS = {
 def test_get_model_zoo_covers_all_names():
     zoo = get_model_zoo()
     assert set(zoo.keys()) == EXPECTED_MODELS
-    for name, display in zoo.items():
+    for _name, display in zoo.items():
         assert isinstance(display, str) and display
 
 

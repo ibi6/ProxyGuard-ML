@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from pathlib import Path
-from typing import Any, Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any
 
 import joblib
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from app.config import (
@@ -90,7 +89,7 @@ def _extract_feature_importances(
     total = float(importances.sum())
     if total > 0:
         importances = importances / total
-    return {n: float(v) for n, v in zip(names, importances)}
+    return {n: float(v) for n, v in zip(names, importances, strict=False)}
 
 
 def _fit_decision_tree_with_val(

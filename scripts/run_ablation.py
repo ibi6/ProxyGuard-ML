@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Ablation experiments for thesis: noise & sample size sweeps."""
 from __future__ import annotations
 
@@ -9,8 +8,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from app.ml.data_generator import generate_synthetic_dataset
-from app.ml.train import train_all
+from app.ml.data_generator import generate_synthetic_dataset  # noqa: E402
+from app.ml.train import train_all  # noqa: E402
 
 OUT = ROOT / "reports" / "ablation_results.json"
 MODELS = [

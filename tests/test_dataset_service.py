@@ -8,13 +8,12 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from fastapi.testclient import TestClient
-
 from app.config import FEATURE_COLUMNS, LABELS
 from app.db import init_db
 from app.main import app
 from app.ml.data_generator import generate_synthetic_dataset
 from app.services.dataset_service import DatasetService
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture()

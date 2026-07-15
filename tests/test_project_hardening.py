@@ -6,12 +6,11 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from fastapi.testclient import TestClient
-
 from app.config import FEATURE_COLUMNS
 from app.db import init_db
 from app.main import app
 from app.ml.features import validate_feature_frame
+from fastapi.testclient import TestClient
 
 
 def _iso_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
@@ -231,8 +230,8 @@ def test_decision_tree_val_tuning_records_depth():
 
 
 def test_train_cancel_between_models(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    from app.ml.train import TrainingCancelled, train_all
     from app.ml.data_generator import generate_synthetic_dataset
+    from app.ml.train import TrainingCancelled, train_all
 
     df = generate_synthetic_dataset(n_per_class=40, seed=1, noise=0.5)
     calls = {"n": 0}

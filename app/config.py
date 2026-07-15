@@ -1,3 +1,7 @@
+"""Application paths and constants (env-overridable)."""
+
+from __future__ import annotations
+
 import os
 from pathlib import Path
 
@@ -8,13 +12,13 @@ REPORTS_DIR = BASE_DIR / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 DB_PATH = BASE_DIR / "app" / "proxyguard.db"
 
-# true 时走 mock，答辩别开
+# USE_MOCK=true → simulated metrics (keep false for real training)
 USE_MOCK = os.getenv("USE_MOCK", "false").strip().lower() in {"1", "true", "yes", "on"}
 
-# 非空则写接口要带 X-API-Token
+# If set, write APIs require header X-API-Token
 API_TOKEN = os.getenv("PROXYGUARD_TOKEN", "").strip()
 
-# 上传大小上限（字节）
+# CSV upload hard cap (bytes)
 MAX_UPLOAD_BYTES = int(os.getenv("PROXYGUARD_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
 
 RANDOM_SEED = 42

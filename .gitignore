@@ -1,34 +1,49 @@
-# Local tooling / agent state
+# --- tooling / agent ---
 .superpowers/
 .omc/
 scripts/.omc/
 
-# Python
+# --- python ---
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
 .venv/
 venv/
-.pytest_cache/
+ENV/
+env/
 *.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
 
-# Secrets & local env
+# --- secrets ---
 .env
 .env.*
 !.env.example
 
-# IDE
+# --- ide / os ---
 .idea/
 .vscode/
 *.swp
-
-# Logs & OS
-*.log
+*.swo
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Runtime data (regenerate locally)
+# --- logs ---
+*.log
+logs/
+
+# --- runtime artifacts (regenerate) ---
 data/synthetic/
 data/uploaded/
 data/active.json
@@ -38,16 +53,18 @@ reports/figures/*
 !reports/figures/.gitkeep
 reports/metrics.json
 reports/experiment_summary.json
+reports/experiment_report.zip
 reports/ablation_run.log
 *.db
 app/proxyguard.db
 
-# Thesis / defense materials (local only — not part of the public project)
+# --- thesis / local-only (not part of public OSS surface) ---
 论文/
 docs/thesis/
 docs/templates/
 docs/result-analysis-template.md
 docs/superpowers/
+docs/毕业设计审查与答辩通关报告.md
 scripts/build_thesis_docx.py
 scripts/build_defense_ppt.js
 scripts/thesis_body_extra.py
@@ -58,7 +75,9 @@ scripts/_force_length_round2.py
 scripts/_force_more_length.py
 scripts/_inject_thesis_length.py
 scripts/_patch_ablation_section.py
+scripts/_patch_thesis_body.py
 
-# One-off scratch
+# --- scratch ---
 *.tmp
 *.bak
+.cache/

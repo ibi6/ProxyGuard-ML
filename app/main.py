@@ -1,5 +1,8 @@
+"""ProxyGuard ML application entrypoint."""
+
+from __future__ import annotations
+
 import logging
-import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -9,7 +12,6 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api import data as data_api
 from app.api import experiments as experiments_api
@@ -18,48 +20,34 @@ from app.api import settings as settings_api
 from app.api import train as train_api
 from app.config import USE_MOCK
 from app.db import init_db
+from app.logging_config import setup_logging
+from app.middleware import RequestLogMiddleware, SecurityHeadersMiddleware
 from app.security import auth_required
 
 logger = logging.getLogger("proxyguard")
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s [proxyguard] %(message)s",
-)
 
-
-class RequestLogMiddleware(BaseHTTPMiddleware):
-    """简单访问日志，方便本地排错。"""
-
-    async def dispatch(self, request: Request, call_next):
-        started = time.perf_counter()
-        response = await call_next(request)
-        path = request.url.path
-        if not path.startswith("/static"):
-            ms = (time.perf_counter() - started) * 1000
-            logger.info(
-                "%s %s -> %s (%.1fms)",
-                request.method,
-                path,
-                response.status_code,
-                ms,
-            )
-        return response
+APP_VERSION = "0.3.0"
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    setup_logging()
     init_db()
     if USE_MOCK:
-        print("[ProxyGuard] 提示: USE_MOCK=true，当前是模拟指标，正式演示请关掉。")
+        logger.warning("USE_MOCK=true — metrics may be simulated; disable for real runs")
     if auth_required():
-        print("[ProxyGuard] 已开启 Token，写接口需要请求头 X-API-Token。")
+        logger.info("Write APIs require header X-API-Token")
     yield
 
 
 app = FastAPI(
     title="ProxyGuard ML",
-    version="0.2.4",
-    description="加密代理流量识别（流级特征 + 集成学习）。默认合成数据，本地演示用。",
+    version=APP_VERSION,
+    description=(
+        "Encrypted proxy traffic recognition with ensemble learning. "
+        "Side-channel flow features only — no payload decryption. "
+        "Default datasets are synthetic and reproducible."
+    ),
     lifespan=lifespan,
 )
 
@@ -69,6 +57,7 @@ templates_dir = BASE_DIR / "templates"
 static_dir.mkdir(exist_ok=True)
 templates_dir.mkdir(exist_ok=True)
 
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestLogMiddleware)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
@@ -125,7 +114,7 @@ def health():
 
 @app.get("/api/system")
 def system_info():
-    """Compact runtime snapshot for dashboard / defense demos."""
+    """Runtime snapshot for dashboards and operators."""
     from app.services.dataset_service import dataset_service
     from app.services.predict_service import predict_service
     from app.services.settings_service import settings_service

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "proxyguard-ml"
-version = "0.2.0"
+version = "0.3.0"
 description = "Encrypted proxy traffic recognition with ensemble learning — FastAPI console, zero payload decrypt."
 readme = { file = "README.en.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -49,19 +49,20 @@ dependencies = [
   "matplotlib==3.9.3",
   "seaborn==0.13.2",
   "joblib==1.4.2",
+  "httpx==0.28.1",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "httpx==0.28.1",
   "pytest==8.3.4",
+  "ruff==0.8.4",
 ]
 
 [project.urls]
 Homepage = "https://github.com/ibi6/ProxyGuard-ML"
 Repository = "https://github.com/ibi6/ProxyGuard-ML"
 Issues = "https://github.com/ibi6/ProxyGuard-ML/issues"
-Documentation = "https://github.com/ibi6/ProxyGuard-ML/blob/main/docs/README.md"
+Documentation = "https://github.com/ibi6/ProxyGuard-ML/blob/main/docs/ARCHITECTURE.md"
 Changelog = "https://github.com/ibi6/ProxyGuard-ML/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
@@ -75,3 +76,15 @@ addopts = "-q"
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+src = ["app", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = [
+  "E501",  # line length handled softly
+  "B008",  # FastAPI Depends() in defaults is intentional
+  "UP038", # isinstance X|Y style; keep broader py310 tuple form in places
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]

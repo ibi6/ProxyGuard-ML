@@ -1,0 +1,2 @@
+# Thin shim — primary config lives in pyproject.toml
+extend = "pyproject.toml"

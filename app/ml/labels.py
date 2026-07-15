@@ -1,4 +1,4 @@
-from app.config import LABELS, LABEL_DISPLAY
+from app.config import LABEL_DISPLAY, LABELS
 
 _ALIAS = {
     **{k: k for k in LABELS},

@@ -9,7 +9,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any
 
-from app.config import FEATURE_COLUMNS, LABELS, LABEL_DISPLAY, RANDOM_SEED
+from app.config import FEATURE_COLUMNS, LABEL_DISPLAY, LABELS, RANDOM_SEED
 from app.ml.data_generator import generate_synthetic_dataset
 
 # 和真实实验差不多的量级，别再写成 0.95 那种虚高数
@@ -344,9 +344,9 @@ class MockStore:
 
     def _soft_proba(self, label: str, confidence: float) -> dict[str, float]:
         remaining = max(0.0, 1.0 - confidence)
-        others = [l for l in LABELS if l != label]
+        others = [lab for lab in LABELS if lab != label]
         share = remaining / len(others) if others else 0.0
-        proba = {l: round(share, 4) for l in others}
+        proba = {lab: round(share, 4) for lab in others}
         proba[label] = round(confidence, 4)
         # renormalize tiny float drift
         total = sum(proba.values()) or 1.0

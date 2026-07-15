@@ -6,16 +6,11 @@ import json
 import threading
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 from app.config import (
     MODELS_DIR,
-    RANDOM_SEED,
     REPORTS_DIR,
-    TEST_RATIO,
-    TRAIN_RATIO,
-    VAL_RATIO,
 )
 from app.db import get_connection, init_db
 from app.ml.models import MODEL_ZOO, get_model_zoo

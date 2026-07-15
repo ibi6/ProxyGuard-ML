@@ -41,7 +41,7 @@ class PredictService:
         model = result.get("model")
         created = _utcnow_iso()
         rows = []
-        for sample, pred in zip(samples, result.get("predictions") or []):
+        for sample, pred in zip(samples, result.get("predictions") or [], strict=False):
             # Compact input summary (key features only)
             summary = {
                 k: sample.get(k)

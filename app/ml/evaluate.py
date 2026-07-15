@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 import numpy as np
 from sklearn.metrics import (
@@ -210,7 +211,7 @@ def save_metric_bar_chart(
     ax.set_ylim(0.0, min(1.05, max(values + [0.0]) * 1.12 + 0.02))
     _style_axes(ax)
 
-    for bar, val in zip(bars, values):
+    for bar, val in zip(bars, values, strict=False):
         ax.annotate(
             f"{val:.3f}",
             xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
@@ -335,7 +336,7 @@ def save_feature_importance_figure(
     ax.xaxis.grid(True, color=_PALETTE["grid"], linestyle="--", linewidth=0.8)
     ax.yaxis.grid(False)
 
-    for yi, val in zip(y, values):
+    for yi, val in zip(y, values, strict=False):
         ax.annotate(
             f"{val:.3f}",
             xy=(val, yi),

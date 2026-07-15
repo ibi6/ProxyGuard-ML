@@ -1,0 +1,8 @@
+# Runtime + developer tooling
+-r requirements.txt
+
+# Lint / format
+ruff==0.8.4
+
+# Type-ish extras already covered by requirements for tests:
+# httpx, pytest are in requirements.txt for convenience
