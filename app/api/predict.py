@@ -1,4 +1,4 @@
-"""Prediction API (real PredictService; optional USE_MOCK)."""
+"""预测接口。"""
 
 from __future__ import annotations
 

@@ -28,12 +28,11 @@ logging.basicConfig(
 
 
 class RequestLogMiddleware(BaseHTTPMiddleware):
-    """Lightweight access log for demo troubleshooting (method path status ms)."""
+    """简单访问日志，方便本地排错。"""
 
     async def dispatch(self, request: Request, call_next):
         started = time.perf_counter()
         response = await call_next(request)
-        # Skip noisy static assets
         path = request.url.path
         if not path.startswith("/static"):
             ms = (time.perf_counter() - started) * 1000
@@ -51,24 +50,16 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 async def lifespan(_app: FastAPI):
     init_db()
     if USE_MOCK:
-        # Visible warning for thesis demos — never present mock metrics as real.
-        print(
-            "[ProxyGuard] WARNING: USE_MOCK=true — training/metrics may be simulated. "
-            "Unset USE_MOCK for real sklearn/xgboost runs."
-        )
+        print("[ProxyGuard] 提示: USE_MOCK=true，当前是模拟指标，正式演示请关掉。")
     if auth_required():
-        print("[ProxyGuard] Write APIs require header X-API-Token (PROXYGUARD_TOKEN is set).")
+        print("[ProxyGuard] 已开启 Token，写接口需要请求头 X-API-Token。")
     yield
 
 
 app = FastAPI(
     title="ProxyGuard ML",
-    version="0.2.2",
-    description=(
-        "Encrypted proxy traffic recognition with ensemble learning. "
-        "Side-channel flow features only — no payload decryption. "
-        "Default datasets are synthetic and reproducible."
-    ),
+    version="0.2.3",
+    description="加密代理流量识别（流级特征 + 集成学习）。默认合成数据，本地演示用。",
     lifespan=lifespan,
 )
 
@@ -82,7 +73,6 @@ app.add_middleware(RequestLogMiddleware)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
 
-# REST APIs (must not collide with HTML page routes)
 app.include_router(data_api.router)
 app.include_router(train_api.router)
 app.include_router(predict_api.router)

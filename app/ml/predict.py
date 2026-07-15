@@ -1,4 +1,4 @@
-"""Load trained joblib models and run batch inference."""
+"""加载模型做预测。"""
 
 from __future__ import annotations
 

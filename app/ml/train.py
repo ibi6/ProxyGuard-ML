@@ -1,4 +1,4 @@
-"""Train model zoo, evaluate, and persist artifacts."""
+"""训练模型、算测试集指标、保存 joblib 和图表。"""
 
 from __future__ import annotations
 

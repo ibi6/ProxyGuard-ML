@@ -1,32 +1,32 @@
-/* ProxyGuard ML — Light Premium SaaS Visual System */
+/* 页面样式：偏普通后台，蓝色主调 */
 
 :root {
-  --pg-bg-0: #f8fafc;
+  --pg-bg-0: #f5f7fa;
   --pg-bg-1: #ffffff;
-  --pg-bg-2: #eef2ff;
-  --pg-surface: rgba(255, 255, 255, 0.82);
+  --pg-bg-2: #eef5fb;
+  --pg-surface: rgba(255, 255, 255, 0.92);
   --pg-surface-solid: #ffffff;
-  --pg-surface-2: rgba(248, 250, 252, 0.92);
-  --pg-border: rgba(148, 163, 184, 0.28);
-  --pg-border-strong: rgba(148, 163, 184, 0.42);
-  --pg-text: #0f172a;
+  --pg-surface-2: rgba(248, 250, 252, 0.95);
+  --pg-border: rgba(148, 163, 184, 0.3);
+  --pg-border-strong: rgba(100, 116, 139, 0.35);
+  --pg-text: #1e293b;
   --pg-text-muted: #64748b;
   --pg-text-dim: #94a3b8;
-  --pg-primary: #7c3aed;
-  --pg-primary-2: #4f46e5;
-  --pg-primary-soft: rgba(124, 58, 237, 0.1);
-  --pg-accent: #6366f1;
-  --pg-success: #10b981;
-  --pg-warning: #f59e0b;
-  --pg-danger: #f43f5e;
-  --pg-info: #3b82f6;
-  --pg-radius: 1rem;
-  --pg-radius-lg: 1.25rem;
-  --pg-radius-xl: 1.5rem;
-  --pg-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.28);
-  --pg-shadow-sm: 0 8px 24px -16px rgba(15, 23, 42, 0.18);
-  --pg-sidebar-w: 17rem;
-  --pg-font: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --pg-primary: #2563eb;
+  --pg-primary-2: #1d4ed8;
+  --pg-primary-soft: rgba(37, 99, 235, 0.1);
+  --pg-accent: #0ea5e9;
+  --pg-success: #059669;
+  --pg-warning: #d97706;
+  --pg-danger: #dc2626;
+  --pg-info: #0284c7;
+  --pg-radius: 0.75rem;
+  --pg-radius-lg: 1rem;
+  --pg-radius-xl: 1.15rem;
+  --pg-shadow: 0 10px 28px -18px rgba(15, 23, 42, 0.28);
+  --pg-shadow-sm: 0 6px 16px -12px rgba(15, 23, 42, 0.2);
+  --pg-sidebar-w: 16rem;
+  --pg-font: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 
 *,
@@ -47,12 +47,7 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(circle at top left, rgba(124, 58, 237, 0.12), transparent 30%),
-    radial-gradient(circle at 85% 10%, rgba(99, 102, 241, 0.1), transparent 28%),
-    radial-gradient(circle at 70% 100%, rgba(16, 185, 129, 0.06), transparent 32%),
-    linear-gradient(135deg, #f8fafc 0%, #ffffff 48%, #eef2ff 100%);
-  background-attachment: fixed;
+  background: #f5f7fa;
 }
 
 a {
@@ -105,8 +100,8 @@ textarea {
   border-radius: 1rem;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #7c3aed, #4f46e5 70%);
-  box-shadow: 0 12px 28px -12px rgba(124, 58, 237, 0.7);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8 70%);
+  box-shadow: 0 12px 28px -12px rgba(37, 99, 235, 0.7);
   color: white;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -174,7 +169,7 @@ textarea {
   color: #6d28d9;
   background: linear-gradient(90deg, rgba(237, 233, 254, 0.95), rgba(238, 242, 255, 0.85));
   border-color: rgba(167, 139, 250, 0.35);
-  box-shadow: 0 8px 18px -14px rgba(124, 58, 237, 0.65);
+  box-shadow: 0 8px 18px -14px rgba(37, 99, 235, 0.65);
 }
 
 .pg-nav-icon {
@@ -369,7 +364,7 @@ textarea {
   width: 8.5rem;
   height: 8.5rem;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.12), transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.12), transparent 70%);
   pointer-events: none;
 }
 
@@ -406,7 +401,7 @@ textarea {
   display: grid;
   place-items: center;
   background: rgba(237, 233, 254, 0.95);
-  color: #7c3aed;
+  color: #2563eb;
   border: 1px solid rgba(167, 139, 250, 0.28);
 }
 
@@ -463,13 +458,13 @@ textarea {
 
 .pg-btn-primary {
   color: white;
-  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 55%, #4f46e5 100%);
-  box-shadow: 0 12px 24px -14px rgba(124, 58, 237, 0.85);
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 55%, #1d4ed8 100%);
+  box-shadow: 0 12px 24px -14px rgba(37, 99, 235, 0.85);
 }
 
 .pg-btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 16px 28px -12px rgba(124, 58, 237, 0.9);
+  box-shadow: 0 16px 28px -12px rgba(37, 99, 235, 0.9);
 }
 
 .pg-btn-secondary {
@@ -652,7 +647,7 @@ textarea {
   place-items: center;
   margin-bottom: 0.95rem;
   background: #ede9fe;
-  color: #7c3aed;
+  color: #2563eb;
   border: 1px solid #ddd6fe;
 }
 
@@ -916,7 +911,7 @@ textarea {
 
 .pg-step-card:hover {
   border-color: rgba(167, 139, 250, 0.55);
-  box-shadow: 0 16px 28px -18px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 16px 28px -18px rgba(37, 99, 235, 0.35);
   transform: translateY(-2px);
 }
 
@@ -967,15 +962,15 @@ textarea {
 }
 
 .pg-check-card:has(input:checked) {
-  border-color: rgba(124, 58, 237, 0.4);
+  border-color: rgba(37, 99, 235, 0.4);
   background: linear-gradient(90deg, rgba(237, 233, 254, 0.9), rgba(238, 242, 255, 0.75));
-  box-shadow: 0 10px 22px -18px rgba(124, 58, 237, 0.55);
+  box-shadow: 0 10px 22px -18px rgba(37, 99, 235, 0.55);
 }
 
 .pg-check-card input {
   width: 1.05rem;
   height: 1.05rem;
-  accent-color: #7c3aed;
+  accent-color: #2563eb;
   flex-shrink: 0;
 }
 
@@ -1022,9 +1017,9 @@ textarea {
 }
 
 .pg-upload-zone:hover {
-  border-color: rgba(124, 58, 237, 0.55);
+  border-color: rgba(37, 99, 235, 0.55);
   background: rgba(245, 243, 255, 0.9);
-  box-shadow: 0 12px 24px -18px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 12px 24px -18px rgba(37, 99, 235, 0.4);
 }
 
 .pg-upload-zone input[type="file"] {
@@ -1097,7 +1092,7 @@ textarea {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #7c3aed, #6366f1);
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
 }
 
 .pg-cm-table th,

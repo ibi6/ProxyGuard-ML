@@ -1,4 +1,4 @@
-"""Prediction service: real inference + SQLite predict_logs."""
+"""预测并写日志。"""
 
 from __future__ import annotations
 

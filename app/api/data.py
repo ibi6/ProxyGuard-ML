@@ -1,4 +1,4 @@
-"""Data generation / summary / preview API (real DatasetService)."""
+"""数据相关接口。"""
 
 from __future__ import annotations
 

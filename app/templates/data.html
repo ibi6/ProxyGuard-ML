@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %}数据管理 · ProxyGuard ML{% endblock %}
-{% block kicker %}工作台{% endblock %}
+{% block kicker %}系统{% endblock %}
 {% block page_title %}数据管理{% endblock %}
-{% block page_desc %}生成合成流级特征数据集，或上传 CSV 进行管理{% endblock %}
+{% block page_desc %}生成合成数据，或上传带 label 的 CSV{% endblock %}
 
 {% block topbar_actions %}
 <span class="pg-status-pill">
@@ -51,7 +51,7 @@
       <div class="pg-card-header">
         <div>
           <h2 class="pg-card-title">上传 CSV</h2>
-          <p class="pg-card-sub">展示版接收文件并进入解析队列</p>
+          <p class="pg-card-sub">CSV 需包含 17 个特征列和 label</p>
         </div>
         <span class="pg-badge pg-badge-warning">Stub</span>
       </div>

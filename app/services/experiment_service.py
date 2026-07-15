@@ -1,4 +1,4 @@
-"""Experiment metrics listing and report export."""
+"""实验指标和导出。"""
 
 from __future__ import annotations
 

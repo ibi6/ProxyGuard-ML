@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %}实验对比 · ProxyGuard ML{% endblock %}
-{% block kicker %}分析{% endblock %}
-{% block page_title %}实验对比{% endblock %}
-{% block page_desc %}对比基学习器与集成模型的准确率、F1 与混淆矩阵{% endblock %}
+{% block kicker %}结果{% endblock %}
+{% block page_title %}实验结果{% endblock %}
+{% block page_desc %}看各模型指标，导出报告压缩包{% endblock %}
 
 {% block topbar_actions %}
 <span class="pg-status-pill">
@@ -34,7 +34,7 @@
         <div class="pg-card-header">
           <div>
             <h2 class="pg-card-title">混淆矩阵</h2>
-            <p class="pg-card-sub">最优模型示意热力（展示版）</p>
+            <p class="pg-card-sub">最优模型混淆矩阵（训练后生成）</p>
           </div>
         </div>
         <div id="exp-cm-body"></div>

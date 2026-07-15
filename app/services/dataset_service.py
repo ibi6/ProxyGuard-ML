@@ -1,4 +1,4 @@
-"""Persist synthetic / uploaded feature datasets and serve summary/preview."""
+"""数据集生成、上传、摘要。"""
 
 from __future__ import annotations
 

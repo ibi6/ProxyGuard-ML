@@ -1,4 +1,4 @@
-"""SQLite schema helpers for task history, predict logs, and settings."""
+"""SQLite：训练任务、预测日志、设置。"""
 
 from __future__ import annotations
 

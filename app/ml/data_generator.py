@@ -1,4 +1,4 @@
-"""Reproducible synthetic flow-feature dataset generator."""
+"""合成流特征数据。固定 seed 可以复现。"""
 
 from __future__ import annotations
 
@@ -7,8 +7,7 @@ import pandas as pd
 
 from app.config import FEATURE_COLUMNS, LABELS, RANDOM_SEED
 
-# Per-label Gaussian means — intentionally overlapping (esp. HTTPS vs Trojan)
-# so models do not trivially hit 100% accuracy on synthetic data.
+# 各类别特征均值。HTTPS 和 Trojan 故意设得近一点，避免准确率虚高到 1.0
 _CLASS_MEANS: dict[str, dict[str, float]] = {
     "normal_https": {
         "pkt_len_mean": 560.0,

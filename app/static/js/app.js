@@ -31,19 +31,19 @@ const MODEL_CATALOG = [
 ];
 
 const CHART_COLORS = {
-  indigo: "#6366f1",
-  cyan: "#06b6d4",
-  emerald: "#10b981",
-  amber: "#f59e0b",
-  rose: "#f43f5e",
+  indigo: "#2563eb",
+  cyan: "#0ea5e9",
+  emerald: "#059669",
+  amber: "#d97706",
+  rose: "#dc2626",
   blue: "#3b82f6",
-  violet: "#7c3aed",
+  violet: "#1d4ed8",
   slate: "#94a3b8",
 };
 
 const CLASS_COLORS = {
   normal_https: "#3b82f6",
-  shadowsocks: "#7c3aed",
+  shadowsocks: "#2563eb",
   trojan: "#f59e0b",
   vmess: "#10b981",
 };
@@ -226,7 +226,7 @@ function chartDefaults() {
   if (typeof Chart === "undefined") return;
   Chart.defaults.color = "#64748b";
   Chart.defaults.borderColor = "rgba(148,163,184,0.22)";
-  Chart.defaults.font.family = "Inter, Segoe UI, PingFang SC, Microsoft YaHei, system-ui, sans-serif";
+  Chart.defaults.font.family = "Segoe UI, PingFang SC, Microsoft YaHei, system-ui, sans-serif";
 }
 
 function emptyHtml(iconPath, title, desc, actionHtml = "") {
@@ -361,10 +361,10 @@ async function initDashboard() {
                 label: "Accuracy",
                 data: models.map((m) => Number(((m.metrics?.accuracy || 0) * 100).toFixed(2))),
                 backgroundColor: models.map((m) =>
-                  m.is_ensemble ? "rgba(16,185,129,0.72)" : "rgba(124,58,237,0.72)"
+                  m.is_ensemble ? "rgba(5,150,105,0.72)" : "rgba(37,99,235,0.72)"
                 ),
                 borderColor: models.map((m) =>
-                  m.is_ensemble ? CHART_COLORS.emerald : CHART_COLORS.violet
+                  m.is_ensemble ? CHART_COLORS.emerald : CHART_COLORS.blue
                 ),
                 borderWidth: 1,
                 borderRadius: 8,
@@ -736,7 +736,7 @@ async function initTrainPage() {
               </div>
             </div>
             <div class="pg-mt-4" style="height:8px;background:rgba(148,163,184,0.2);border-radius:999px;overflow:hidden;">
-              <div style="height:100%;width:${Math.max(2, Math.min(100, (progressVal || 0) * 100))}%;background:linear-gradient(90deg,#7c3aed,#06b6d4);transition:width .3s ease;"></div>
+              <div style="height:100%;width:${Math.max(2, Math.min(100, (progressVal || 0) * 100))}%;background:linear-gradient(90deg,#2563eb,#0ea5e9);transition:width .3s ease;"></div>
             </div>
             <p class="pg-dim" style="margin:0.9rem 0 0;font-size:0.8rem;">
               ${escapeHtml(latest.message || latest.error || "")}${latest.finished_at ? ` · 完成于 ${String(latest.finished_at).replace("T", " ").replace("+00:00", " UTC")}` : latest.status === "running" ? " · 后台训练中，请稍候…" : ""}
@@ -897,7 +897,7 @@ async function initPredictPage() {
         warnBox.innerHTML = `
           <strong>尚未完成训练。</strong>
           请先到
-          <a href="/train" style="color:#7c3aed;text-decoration:underline;font-weight:600;">模型训练</a>
+          <a href="/train" style="color:#2563eb;text-decoration:underline;font-weight:600;">模型训练</a>
           页完成至少一次训练，再进行真实模型推理。
         `;
       } else {
@@ -1179,7 +1179,7 @@ async function initExperimentsPage() {
         const body = matrix.map((row, i) => {
           const cells = row.map((v) => {
             const intensity = v / (Math.max(...row, 1) || 1);
-            const bg = `rgba(124,58,237,${0.06 + intensity * 0.42})`;
+            const bg = `rgba(37,99,235,${0.06 + intensity * 0.42})`;
             return `<td class="pg-cm-cell" style="background:${bg}">${v}</td>`;
           }).join("");
           return `<tr><th>${escapeHtml(LABEL_DISPLAY[LABEL_ORDER[i]])}</th>${cells}</tr>`;
@@ -1221,7 +1221,7 @@ async function initExperimentsPage() {
             datasets: [{
               label: "重要性",
               data: fi.map((x) => Number((x.importance * 100).toFixed(2))),
-              backgroundColor: "rgba(124,58,237,0.55)",
+              backgroundColor: "rgba(37,99,235,0.55)",
               borderColor: CHART_COLORS.violet,
               borderWidth: 1,
               borderRadius: 6,

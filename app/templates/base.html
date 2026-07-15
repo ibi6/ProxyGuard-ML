@@ -10,14 +10,14 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'system-ui', 'sans-serif'],
+            sans: ['Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'system-ui', 'sans-serif'],
           },
           colors: {
             pg: {
-              bg: '#f8fafc',
+              bg: '#f5f7fa',
               panel: '#ffffff',
-              primary: '#7c3aed',
-              accent: '#4f46e5',
+              primary: '#2563eb',
+              accent: '#0ea5e9',
             }
           }
         }
@@ -43,12 +43,12 @@
       </div>
 
       <nav class="pg-nav">
-        <div class="pg-nav-label">工作台</div>
+        <div class="pg-nav-label">功能</div>
         <a href="/" class="pg-nav-item {% if active == 'dashboard' %}active{% endif %}">
           <span class="pg-nav-icon">
             <svg viewBox="0 0 24 24"><path d="M3 12l2-2 7-7 7 7 2 2"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
           </span>
-          总览看板
+          首页
         </a>
         <a href="/data" class="pg-nav-item {% if active == 'data' %}active{% endif %}">
           <span class="pg-nav-icon">
@@ -99,9 +99,9 @@
             </svg>
           </button>
           <div class="pg-topbar-left">
-            <p class="pg-page-kicker">{% block kicker %}控制台{% endblock %}</p>
-            <h1 class="pg-page-title">{% block page_title %}总览看板{% endblock %}</h1>
-            <p class="pg-page-desc">{% block page_desc %}加密代理流量识别与实验分析{% endblock %}</p>
+            <p class="pg-page-kicker">{% block kicker %}系统{% endblock %}</p>
+            <h1 class="pg-page-title">{% block page_title %}首页{% endblock %}</h1>
+            <p class="pg-page-desc">{% block page_desc %}加密代理流量识别（毕设演示）{% endblock %}</p>
           </div>
         </div>
         <div class="pg-topbar-right">

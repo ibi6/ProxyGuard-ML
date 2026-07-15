@@ -1,8 +1,4 @@
-"""In-memory MockStore for stage-1 demo APIs.
-
-All training/prediction metrics are synthetic but realistic so the frontend
-can exercise the full product flow without real ML.
-"""
+"""内存 Mock，只给前端联调。正式跑实验请 USE_MOCK=false。"""
 
 from __future__ import annotations
 
@@ -16,8 +12,7 @@ from typing import Any
 from app.config import FEATURE_COLUMNS, LABELS, LABEL_DISPLAY, RANDOM_SEED
 from app.ml.data_generator import generate_synthetic_dataset
 
-# Mock metrics aligned with real synthetic experiments (n=800/class, noise=0.85).
-# Do NOT inflate toward 0.95+ — that conflicts with honest thesis numbers.
+# 和真实实验差不多的量级，别再写成 0.95 那种虚高数
 _BASE_METRICS: dict[str, dict[str, float]] = {
     "decision_tree": {"accuracy": 0.600, "f1": 0.604, "precision": 0.609, "recall": 0.600},
     "svm": {"accuracy": 0.750, "f1": 0.748, "precision": 0.747, "recall": 0.750},
@@ -144,7 +139,7 @@ class MockStore:
             self._dataset_meta["generated_at"] = _utcnow_iso()
             return {
                 "status": "accepted",
-                "message": "展示版已接收，成品阶段解析",
+                "message": "CSV 已校验并保存",
                 "filename": filename,
                 "parsed": False,
                 "summary": self._summary_unlocked(),
@@ -391,7 +386,7 @@ class MockStore:
             return {
                 "format": "json",
                 "status": "ready",
-                "message": "展示版导出元信息（成品阶段生成 zip/图表包）",
+                "message": "已生成导出信息",
                 "generated_at": _utcnow_iso(),
                 "dataset": deepcopy(self._dataset_meta),
                 "models": list(self._models.keys()),

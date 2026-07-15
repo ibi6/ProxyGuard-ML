@@ -1,4 +1,4 @@
-"""SQLite-backed application settings."""
+"""系统设置读写。"""
 
 from __future__ import annotations
 

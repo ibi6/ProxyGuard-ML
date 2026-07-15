@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %}系统设置 · ProxyGuard ML{% endblock %}
-{% block kicker %}分析{% endblock %}
-{% block page_title %}系统设置{% endblock %}
-{% block page_desc %}随机种子、数据划分比例与默认生成参数{% endblock %}
+{% block kicker %}系统{% endblock %}
+{% block page_title %}设置{% endblock %}
+{% block page_desc %}种子、划分比例等，保存后下次训练会用到{% endblock %}
 
 {% block topbar_actions %}
 <span class="pg-status-pill">
@@ -72,7 +72,7 @@
     <div class="pg-card-header">
       <div>
         <h2 class="pg-card-title">说明</h2>
-        <p class="pg-card-sub">展示版配置项</p>
+        <p class="pg-card-sub">当前生效的配置</p>
       </div>
     </div>
     <ul class="pg-list">

@@ -1,4 +1,4 @@
-"""Training task API (real TrainService; optional USE_MOCK)."""
+"""训练相关接口。"""
 
 from __future__ import annotations
 

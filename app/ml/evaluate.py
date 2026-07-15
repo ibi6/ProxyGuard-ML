@@ -1,4 +1,4 @@
-"""Model evaluation metrics and paper-ready figure export."""
+"""算指标，画对比图。"""
 
 from __future__ import annotations
 

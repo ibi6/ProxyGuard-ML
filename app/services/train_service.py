@@ -1,4 +1,4 @@
-"""Background training tasks with SQLite status + real train_all."""
+"""后台训练任务，状态写到 SQLite。"""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Experiments comparison and report export API."""
+"""实验结果接口。"""
 
 from __future__ import annotations
 

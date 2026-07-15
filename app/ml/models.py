@@ -1,4 +1,4 @@
-"""Model zoo builders for encrypted proxy traffic classification."""
+"""组装各个分类模型。"""
 
 from __future__ import annotations
 
@@ -28,16 +28,12 @@ MODEL_ZOO: dict[str, str] = {
     "stacking": "Stacking Ensemble",
 }
 
-# Boosters that train on integer class ids; reload must still emit string LABELS.
+# xgboost / lightgbm 训练时用数字标签，保存后再加载要还原成字符串
 INTEGER_LABEL_MODELS = frozenset({"xgboost", "lightgbm"})
 
 
 class LabeledClassifier:
-    """Estimator + LabelEncoder so joblib reload predicts string labels.
-
-    XGBoost/LightGBM often fit on integer codes; without this wrapper a raw
-    booster reload returns ints (0,1,2,...) instead of LABELS strings.
-    """
+    """把 LabelEncoder 和模型绑在一起，避免 joblib 加载后预测变成 0/1/2。"""
 
     def __init__(
         self,

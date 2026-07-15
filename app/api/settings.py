@@ -1,4 +1,4 @@
-"""Settings API (SQLite-backed; optional USE_MOCK)."""
+"""设置接口。"""
 
 from __future__ import annotations
 
