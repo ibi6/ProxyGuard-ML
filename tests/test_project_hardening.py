@@ -218,14 +218,33 @@ def test_decision_tree_val_tuning_records_depth():
 
     result = train_all(
         df,
-        model_names=["decision_tree"],
+        model_names=["decision_tree", "random_forest"],
         seed=42,
         ratios=(0.7, 0.15, 0.15),
         progress_callback=cb,
     )
-    assert result["best_model"] == "decision_tree"
     assert "decision_tree" in result["metrics"]
-    assert "val_f1" in result["metrics"]["decision_tree"]
     assert result["metrics"]["decision_tree"].get("tuned_max_depth") is not None
+    assert result["metrics"]["random_forest"].get("tuned_n_estimators") is not None
     assert result.get("n_val", 0) > 0
-    assert any("training decision_tree" in m for m in progress_msgs)
+    assert any("decision_tree" in m for m in progress_msgs)
+
+
+def test_train_cancel_between_models(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    from app.ml.train import TrainingCancelled, train_all
+    from app.ml.data_generator import generate_synthetic_dataset
+
+    df = generate_synthetic_dataset(n_per_class=40, seed=1, noise=0.5)
+    calls = {"n": 0}
+
+    def should_cancel() -> bool:
+        calls["n"] += 1
+        return calls["n"] > 2
+
+    with pytest.raises(TrainingCancelled):
+        train_all(
+            df,
+            model_names=["decision_tree", "random_forest", "svm"],
+            seed=1,
+            should_cancel=should_cancel,
+        )

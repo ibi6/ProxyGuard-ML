@@ -19,7 +19,7 @@ from app.config import (
 )
 from app.db import get_connection, init_db
 from app.ml.models import MODEL_ZOO, get_model_zoo
-from app.ml.train import train_all
+from app.ml.train import TrainingCancelled, train_all
 from app.services.dataset_service import dataset_service
 from app.services.settings_service import settings_service
 
@@ -66,6 +66,7 @@ class TrainService:
         init_db()
         self._lock = threading.Lock()
         self._threads: dict[str, threading.Thread] = {}
+        self._cancel_flags: dict[str, threading.Event] = {}
 
     def start(self, models: list[str] | None = None) -> str:
         """Create a running task and train in background. Returns task_id quickly."""
@@ -121,11 +122,12 @@ class TrainService:
                 "source": summary.get("source"),
             },
             "note": (
-                "val split is held out for future tuning; "
-                "reported metrics are test-set only"
+                "decision_tree / random_forest lightly tuned on val; "
+                "public metrics are test-set only"
             ),
         }
 
+        cancel_flag = threading.Event()
         with get_connection() as conn:
             conn.execute(
                 """
@@ -152,14 +154,34 @@ class TrainService:
 
         thread = threading.Thread(
             target=self._run_train,
-            args=(task_id, frame, names, seed, ratios),
+            args=(task_id, frame, names, seed, ratios, cancel_flag),
             name=f"train-{task_id}",
             daemon=True,
         )
         with self._lock:
             self._threads[task_id] = thread
+            self._cancel_flags[task_id] = cancel_flag
         thread.start()
         return task_id
+
+    def cancel(self, task_id: str) -> dict[str, Any]:
+        """Request cancel for a running task (stops between models)."""
+        with self._lock:
+            flag = self._cancel_flags.get(task_id)
+            thread = self._threads.get(task_id)
+        if flag is None or thread is None or not thread.is_alive():
+            task = self.get(task_id)
+            if task is None:
+                raise ValueError(f"task not found: {task_id}")
+            if task.get("status") != "running":
+                raise ValueError(f"task is not running: {task.get('status')}")
+            raise ValueError("task worker not found (already finished?)")
+        flag.set()
+        self._update_task(
+            task_id,
+            message="cancel requested — will stop after current model",
+        )
+        return {"task_id": task_id, "status": "cancelling"}
 
     def _update_task(self, task_id: str, **fields: Any) -> None:
         allowed = {
@@ -199,12 +221,15 @@ class TrainService:
         names: list[str],
         seed: int,
         ratios: tuple[float, float, float],
+        cancel_flag: threading.Event,
     ) -> None:
         def on_progress(progress: float, message: str) -> None:
-            # Keep status running; UI polls progress/message.
+            status = "running"
+            if cancel_flag.is_set():
+                message = f"{message}（正在取消…）"
             self._update_task(
                 task_id,
-                status="running",
+                status=status,
                 progress=float(progress),
                 message=str(message),
             )
@@ -214,7 +239,7 @@ class TrainService:
                 task_id,
                 status="running",
                 progress=0.02,
-                message="training started",
+                message="开始训练",
             )
             result = train_all(
                 frame,
@@ -222,6 +247,7 @@ class TrainService:
                 seed=seed,
                 ratios=ratios,
                 progress_callback=on_progress,
+                should_cancel=cancel_flag.is_set,
             )
             metrics = result.get("metrics") or {}
             best = result.get("best_model")
@@ -232,21 +258,31 @@ class TrainService:
                 metrics=metrics,
                 best_model=best,
                 finished_at=_utcnow_iso(),
-                message="training completed",
+                message="训练完成",
                 error=None,
             )
-        except Exception as exc:  # noqa: BLE001 — surface to task status
+        except TrainingCancelled as exc:
+            self._update_task(
+                task_id,
+                status="cancelled",
+                progress=1.0,
+                error=None,
+                message=str(exc) or "已取消",
+                finished_at=_utcnow_iso(),
+            )
+        except Exception as exc:  # noqa: BLE001
             self._update_task(
                 task_id,
                 status="failed",
                 progress=1.0,
                 error=str(exc),
-                message=f"training failed: {exc}",
+                message=f"训练失败: {exc}",
                 finished_at=_utcnow_iso(),
             )
         finally:
             with self._lock:
                 self._threads.pop(task_id, None)
+                self._cancel_flags.pop(task_id, None)
 
     def get(self, task_id: str) -> dict[str, Any] | None:
         with get_connection() as conn:

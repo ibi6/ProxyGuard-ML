@@ -58,7 +58,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title="ProxyGuard ML",
-    version="0.2.3",
+    version="0.2.4",
     description="加密代理流量识别（流级特征 + 集成学习）。默认合成数据，本地演示用。",
     lifespan=lifespan,
 )

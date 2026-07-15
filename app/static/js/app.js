@@ -491,6 +491,7 @@ async function initDashboard() {
 async function initDataPage() {
   const form = document.getElementById("data-generate-form");
   const genBtn = document.getElementById("btn-generate");
+  const paperBtn = document.getElementById("btn-paper-params");
   const uploadInput = document.getElementById("data-upload");
   const summaryBadge = document.getElementById("data-summary-badge");
   const metaLine = document.getElementById("data-meta-line");
@@ -501,12 +502,30 @@ async function initDataPage() {
   const seedInput = document.getElementById("gen-seed");
   const noiseInput = document.getElementById("gen-noise");
 
-  // Prefill from settings
+  const PAPER = { n_per_class: 800, seed: 42, noise: 0.85 };
+
+  function fillPaperParams() {
+    if (nInput) nInput.value = PAPER.n_per_class;
+    if (seedInput) seedInput.value = PAPER.seed;
+    if (noiseInput) noiseInput.value = PAPER.noise;
+  }
+
+  paperBtn?.addEventListener("click", () => {
+    fillPaperParams();
+    showToast("已填入论文参数：800 / 42 / 0.85", "success");
+  });
+
+  // 默认用论文参数；若设置页有值则覆盖（但 n 太小时提醒）
+  fillPaperParams();
   try {
     const settings = await api("/api/settings");
-    if (nInput && settings.n_per_class_default != null) nInput.value = settings.n_per_class_default;
     if (seedInput && settings.random_seed != null) seedInput.value = settings.random_seed;
     if (noiseInput && settings.noise_default != null) noiseInput.value = settings.noise_default;
+    if (nInput && settings.n_per_class_default != null) {
+      const n = Number(settings.n_per_class_default);
+      // 设置里若是演示用的小 n，仍优先论文 800，避免训成玩具集
+      nInput.value = n >= 500 ? n : PAPER.n_per_class;
+    }
   } catch (_) {
     /* ignore */
   }
@@ -655,39 +674,69 @@ async function initDataPage() {
 async function initTrainPage() {
   const modelGrid = document.getElementById("train-model-grid");
   const trainBtn = document.getElementById("btn-train");
+  const trainBtnBottom = document.getElementById("btn-train-bottom");
+  const cancelBtn = document.getElementById("btn-cancel-train");
   const statusCard = document.getElementById("train-status-card");
   const metricsBody = document.getElementById("train-metrics-body");
   const selectDefaults = document.getElementById("btn-select-defaults");
   const selectAll = document.getElementById("btn-select-all");
 
-  const defaultIds = ["random_forest", "xgboost", "lightgbm", "voting", "stacking"];
+  // 答辩推荐：快、够对比（不含 stacking）
+  const defaultIds = ["random_forest", "xgboost", "voting"];
+  let activeTaskId = null;
 
   if (modelGrid) {
-    modelGrid.innerHTML = MODEL_CATALOG.map((m) => `
+    modelGrid.innerHTML = MODEL_CATALOG.map((m) => {
+      const slow = m.id === "stacking" || m.id === "svm";
+      return `
       <label class="pg-check-card">
         <input type="checkbox" name="model" value="${m.id}" ${defaultIds.includes(m.id) ? "checked" : ""} />
         <span class="pg-check-card-body">
           <span class="pg-check-card-title">${escapeHtml(m.label)}</span>
-          <span class="pg-check-card-sub">${m.ensemble ? "集成学习" : "基学习器"}</span>
+          <span class="pg-check-card-sub">${m.ensemble ? "集成" : "基学习器"}${slow ? " · 可能较慢" : ""}</span>
         </span>
         ${m.ensemble ? '<span class="pg-badge pg-badge-info">Ensemble</span>' : '<span class="pg-badge pg-badge-neutral">Base</span>'}
-      </label>
-    `).join("");
+      </label>`;
+    }).join("");
   }
 
   function selectedModels() {
     return Array.from(document.querySelectorAll('input[name="model"]:checked')).map((el) => el.value);
   }
 
+  function setTrainBusy(busy) {
+    [trainBtn, trainBtnBottom].forEach((b) => {
+      if (!b) return;
+      b.disabled = !!busy;
+    });
+    if (cancelBtn) cancelBtn.disabled = !busy && !activeTaskId;
+  }
+
   selectDefaults?.addEventListener("click", () => {
     document.querySelectorAll('input[name="model"]').forEach((el) => {
       el.checked = defaultIds.includes(el.value);
     });
+    showToast("已选答辩推荐：RF + XGBoost + Voting", "info");
   });
   selectAll?.addEventListener("click", () => {
     document.querySelectorAll('input[name="model"]').forEach((el) => {
       el.checked = true;
     });
+    showToast("已全选（含 Stacking，可能较慢）", "warning");
+  });
+
+  cancelBtn?.addEventListener("click", async () => {
+    if (!activeTaskId) {
+      showToast("没有进行中的任务", "warning");
+      return;
+    }
+    try {
+      await api(`/api/train/${activeTaskId}/cancel`, { method: "POST", body: "{}" });
+      showToast("已请求取消，当前模型结束后停止", "info");
+      await renderTasks();
+    } catch (err) {
+      showToast(err.message || "取消失败", "error");
+    }
   });
 
   async function renderTasks() {
@@ -699,23 +748,34 @@ async function initTrainPage() {
       const tasks = tasksResp.tasks || [];
       const latest = tasks[0];
 
+      if (latest && latest.status === "running") {
+        activeTaskId = latest.task_id;
+        if (cancelBtn) cancelBtn.disabled = false;
+      } else if (latest && latest.status !== "running") {
+        if (activeTaskId === latest.task_id) activeTaskId = null;
+        if (cancelBtn) cancelBtn.disabled = true;
+      }
+
       if (statusCard) {
         if (!latest) {
           statusCard.innerHTML = emptyHtml(
             '<path d="M12 3v6"/><rect x="4" y="11" width="16" height="9" rx="2"/>',
             "尚无训练任务",
-            "勾选模型后点击「开始训练」。训练在后台线程执行，页面会轮询任务状态。"
+            "建议先确认数据约每类 800，再勾选模型开始训练。"
           );
         } else {
-          const st =
-            latest.status === "success"
-              ? '<span class="pg-badge pg-badge-success">训练成功</span>'
-              : latest.status === "running"
-                ? '<span class="pg-badge pg-badge-info">运行中</span>'
-                : latest.status === "failed"
-                  ? '<span class="pg-badge pg-badge-danger">失败</span>'
-                  : `<span class="pg-badge pg-badge-neutral">${escapeHtml(latest.status)}</span>`;
-          const progressVal = latest.progress == null ? (latest.status === "success" ? 1 : 0) : latest.progress;
+          const stMap = {
+            success: '<span class="pg-badge pg-badge-success">成功</span>',
+            running: '<span class="pg-badge pg-badge-info">运行中</span>',
+            failed: '<span class="pg-badge pg-badge-danger">失败</span>',
+            cancelled: '<span class="pg-badge pg-badge-warning">已取消</span>',
+          };
+          const st = stMap[latest.status]
+            || `<span class="pg-badge pg-badge-neutral">${escapeHtml(latest.status)}</span>`;
+          const progressVal = latest.progress == null
+            ? (latest.status === "success" || latest.status === "cancelled" ? 1 : 0)
+            : latest.progress;
+          const modelCount = (latest.models || []).length;
           statusCard.innerHTML = `
             <div class="pg-status-grid">
               <div>
@@ -739,7 +799,10 @@ async function initTrainPage() {
               <div style="height:100%;width:${Math.max(2, Math.min(100, (progressVal || 0) * 100))}%;background:linear-gradient(90deg,#2563eb,#0ea5e9);transition:width .3s ease;"></div>
             </div>
             <p class="pg-dim" style="margin:0.9rem 0 0;font-size:0.8rem;">
-              ${escapeHtml(latest.message || latest.error || "")}${latest.finished_at ? ` · 完成于 ${String(latest.finished_at).replace("T", " ").replace("+00:00", " UTC")}` : latest.status === "running" ? " · 后台训练中，请稍候…" : ""}
+              ${escapeHtml(latest.message || latest.error || "")}
+              ${modelCount ? ` · 共 ${modelCount} 个模型` : ""}
+              ${latest.finished_at ? ` · 结束于 ${String(latest.finished_at).replace("T", " ").replace("+00:00", "")}` : ""}
+              ${latest.status === "running" ? " · 请稍候，Stacking 会慢一些" : ""}
             </p>
           `;
         }
@@ -791,41 +854,51 @@ async function initTrainPage() {
     }
   }
 
-  async function pollTrainTask(taskId, { intervalMs = 1500, timeoutMs = 180000 } = {}) {
+  async function pollTrainTask(taskId, { intervalMs = 1200, timeoutMs = 600000 } = {}) {
     const started = Date.now();
     while (Date.now() - started < timeoutMs) {
       const task = await api(`/api/train/${taskId}`);
       await renderTasks();
-      if (task.status === "success" || task.status === "failed") {
+      if (["success", "failed", "cancelled"].includes(task.status)) {
         return task;
       }
       await new Promise((r) => window.setTimeout(r, intervalMs));
     }
-    throw new Error("训练超时（已超过 180s），请稍后在任务列表查看状态");
+    throw new Error("训练等待超时，请稍后在本页查看任务状态");
   }
 
-  trainBtn?.addEventListener("click", async () => {
+  async function startTrain() {
     const models = selectedModels();
     if (!models.length) {
       showToast("请至少选择一个模型", "warning");
       return;
     }
+    if (models.includes("stacking") && models.length > 4) {
+      showToast("含 Stacking 且模型较多，可能要几分钟", "warning");
+    }
+    setTrainBusy(true);
     setLoading(trainBtn, true);
     try {
-      // Ensure data exists for nicer demo
       const summary = await api("/api/data/summary");
       if (!summary.total_samples) {
         await api("/api/data/generate", {
           method: "POST",
-          body: JSON.stringify({ n_per_class: 200, seed: 42, noise: 0.85 }),
+          body: JSON.stringify({ n_per_class: 800, seed: 42, noise: 0.85 }),
         });
-        showToast("未检测到数据，已自动生成 200/类 样本", "info");
+        showToast("没有数据，已按论文参数生成 800/类", "info");
+      } else if ((summary.n_per_class || 0) > 0 && summary.n_per_class < 500) {
+        showToast(
+          `当前每类约 ${summary.n_per_class} 条，论文建议 800。可先回数据页重新生成。`,
+          "warning"
+        );
       }
       const res = await api("/api/train", {
         method: "POST",
         body: JSON.stringify({ models }),
       });
       const taskId = res.task_id;
+      activeTaskId = taskId;
+      if (cancelBtn) cancelBtn.disabled = false;
       const initial = res.task || res;
       if (initial.status === "success") {
         showToast(`训练完成 · 最优 ${modelShort(initial.best_model || taskId)}`, "success");
@@ -834,11 +907,13 @@ async function initTrainPage() {
         showToast(initial.error || initial.message || "训练失败", "error");
         await renderTasks();
       } else {
-        showToast(`训练已启动 · ${taskId}，后台运行中…`, "info");
+        showToast(`训练已启动 · ${taskId}`, "info");
         await renderTasks();
         const task = await pollTrainTask(taskId);
         if (task.status === "success") {
           showToast(`训练完成 · 最优 ${modelShort(task.best_model)}`, "success");
+        } else if (task.status === "cancelled") {
+          showToast("训练已取消", "warning");
         } else {
           showToast(task.error || task.message || "训练失败", "error");
         }
@@ -847,9 +922,16 @@ async function initTrainPage() {
     } catch (err) {
       showToast(err.message || "训练失败", "error");
     } finally {
+      setTrainBusy(false);
+      activeTaskId = null;
+      if (cancelBtn) cancelBtn.disabled = true;
       setLoading(trainBtn, false);
+      setLoading(trainBtnBottom, false);
     }
-  });
+  }
+
+  trainBtn?.addEventListener("click", startTrain);
+  trainBtnBottom?.addEventListener("click", startTrain);
 
   await renderTasks();
 }
@@ -1054,53 +1136,6 @@ async function initPredictPage() {
 }
 
 /* ===================== Experiments ===================== */
-function syntheticConfusion(bestF1 = 0.92) {
-  // 4x4 soft diagonal matrix that looks realistic
-  const n = 100;
-  const diag = Math.round(n * Math.min(0.97, Math.max(0.75, bestF1)));
-  const off = n - diag;
-  const matrix = LABEL_ORDER.map((rowLabel, i) =>
-    LABEL_ORDER.map((colLabel, j) => {
-      if (i === j) return diag;
-      // distribute off-diagonal
-      const share = Math.floor(off / 3);
-      const rem = off - share * 3;
-      const order = [0, 1, 2].filter((x) => x !== i);
-      // map j to off-diag slot
-      const offs = LABEL_ORDER.map((_, k) => k).filter((k) => k !== i);
-      const idx = offs.indexOf(j);
-      return idx === 0 ? share + rem : share;
-    })
-  );
-  return matrix;
-}
-
-function syntheticFeatureImportance() {
-  // Stable-ish ranking for demo charts
-  const weights = {
-    pkt_size_entropy: 0.14,
-    packets_per_second: 0.12,
-    iat_mean: 0.11,
-    iat_burstiness: 0.1,
-    byte_up_down_ratio: 0.09,
-    pkt_len_mean: 0.08,
-    iat_std: 0.07,
-    duration: 0.06,
-    uplink_pkt_ratio: 0.05,
-    total_packets: 0.05,
-    pkt_len_std: 0.04,
-    iat_entropy: 0.03,
-    pkt_len_max: 0.02,
-    total_bytes: 0.02,
-    pkt_len_p75: 0.01,
-    pkt_len_p25: 0.005,
-    pkt_len_min: 0.005,
-  };
-  return FEATURE_COLUMNS
-    .map((f) => ({ feature: f, importance: weights[f] ?? 0.01 }))
-    .sort((a, b) => b.importance - a.importance);
-}
-
 async function initExperimentsPage() {
   const tableBody = document.getElementById("exp-table-body");
   const cmBody = document.getElementById("exp-cm-body");
@@ -1122,9 +1157,9 @@ async function initExperimentsPage() {
           emptyAll.classList.remove("pg-hidden");
           emptyAll.innerHTML = emptyHtml(
             '<path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-3"/>',
-            "暂无实验数据",
-            "完成至少一次模型训练后，这里将展示对比表、混淆矩阵与特征重要性。",
-            '<a href="/train" class="pg-btn pg-btn-primary pg-btn-sm">去训练</a>'
+            "还没有实验结果",
+            "请先在数据页生成约每类 800 条样本，再到训练页完成一次训练。这里会显示指标对比；混淆矩阵和特征重要性来自真实训练结果，不会用假图凑数。",
+            '<a href="/data" class="pg-btn pg-btn-secondary pg-btn-sm">去数据页</a> <a href="/train" class="pg-btn pg-btn-primary pg-btn-sm">去训练</a>'
           );
         }
         return;
@@ -1172,83 +1207,112 @@ async function initExperimentsPage() {
       const cmFromReport = best?.model && report.confusion_matrices
         ? report.confusion_matrices[best.model]
         : null;
-      const matrix = Array.isArray(cmFromReport) ? cmFromReport : syntheticConfusion(best?.f1 || 0.92);
-      const cmIsReal = Array.isArray(cmFromReport);
+
       if (cmBody) {
-        const head = `<tr><th></th>${LABEL_ORDER.map((l) => `<th>${escapeHtml(LABEL_DISPLAY[l])}</th>`).join("")}</tr>`;
-        const body = matrix.map((row, i) => {
-          const cells = row.map((v) => {
-            const intensity = v / (Math.max(...row, 1) || 1);
-            const bg = `rgba(37,99,235,${0.06 + intensity * 0.42})`;
-            return `<td class="pg-cm-cell" style="background:${bg}">${v}</td>`;
+        if (Array.isArray(cmFromReport)) {
+          const matrix = cmFromReport;
+          const head = `<tr><th></th>${LABEL_ORDER.map((l) => `<th>${escapeHtml(LABEL_DISPLAY[l])}</th>`).join("")}</tr>`;
+          const body = matrix.map((row, i) => {
+            const cells = row.map((v) => {
+              const intensity = v / (Math.max(...row, 1) || 1);
+              const bg = `rgba(37,99,235,${0.06 + intensity * 0.42})`;
+              return `<td class="pg-cm-cell" style="background:${bg}">${v}</td>`;
+            }).join("");
+            return `<tr><th>${escapeHtml(LABEL_DISPLAY[LABEL_ORDER[i]])}</th>${cells}</tr>`;
           }).join("");
-          return `<tr><th>${escapeHtml(LABEL_DISPLAY[LABEL_ORDER[i]])}</th>${cells}</tr>`;
-        }).join("");
-        cmBody.innerHTML = `
-          <div class="pg-table-wrap">
-            <table class="pg-table pg-cm-table">
-              <thead>${head}</thead>
-              <tbody>${body}</tbody>
-            </table>
-          </div>
-          <p class="pg-dim" style="margin:0.75rem 0 0;font-size:0.8rem;">
-            行 = 真实标签 · 列 = 预测标签 · 基于最优模型 ${escapeHtml(modelShort(best?.model))}${cmIsReal ? " 的真实混淆矩阵" : " 的示意热力"}
-          </p>
-        `;
+          cmBody.innerHTML = `
+            <div class="pg-table-wrap">
+              <table class="pg-table pg-cm-table">
+                <thead>${head}</thead>
+                <tbody>${body}</tbody>
+              </table>
+            </div>
+            <p class="pg-dim" style="margin:0.75rem 0 0;font-size:0.8rem;">
+              行=真实 · 列=预测 · 模型 ${escapeHtml(modelShort(best?.model))}
+            </p>
+          `;
+        } else {
+          cmBody.innerHTML = emptyHtml(
+            '<path d="M4 19V5"/><path d="M4 19h16"/>',
+            "暂无混淆矩阵",
+            "重新训练一次后，这里会显示最优模型的真实混淆矩阵（不再使用示意假图）。",
+            '<a href="/train" class="pg-btn pg-btn-primary pg-btn-sm">去训练</a>'
+          );
+        }
       }
 
       const fiFromReport = best?.model && report.feature_importances
         ? report.feature_importances[best.model]
         : null;
-      let fi;
-      if (fiFromReport && typeof fiFromReport === "object" && Object.keys(fiFromReport).length) {
-        fi = Object.entries(fiFromReport)
+      // 若最优模型没有重要性（如 SVM），尝试其它带 FI 的模型
+      let fiSource = fiFromReport;
+      if (!fiSource || !Object.keys(fiSource).length) {
+        const allFi = report.feature_importances || {};
+        for (const key of ["random_forest", "xgboost", "lightgbm", "decision_tree", "adaboost"]) {
+          if (allFi[key] && Object.keys(allFi[key]).length) {
+            fiSource = allFi[key];
+            break;
+          }
+        }
+      }
+
+      if (fiSource && typeof fiSource === "object" && Object.keys(fiSource).length) {
+        const fi = Object.entries(fiSource)
           .map(([feature, importance]) => ({ feature, importance: Number(importance) || 0 }))
           .sort((a, b) => b.importance - a.importance)
           .slice(0, 10);
-      } else {
-        fi = syntheticFeatureImportance().slice(0, 10);
-      }
-      fiEmpty?.classList.add("pg-hidden");
-      fiWrap?.classList.remove("pg-hidden");
-      const canvas = document.getElementById("exp-fi-chart");
-      if (canvas && typeof Chart !== "undefined") {
-        destroyChart("exp-fi");
-        _charts["exp-fi"] = new Chart(canvas, {
-          type: "bar",
-          data: {
-            labels: fi.map((x) => x.feature),
-            datasets: [{
-              label: "重要性",
-              data: fi.map((x) => Number((x.importance * 100).toFixed(2))),
-              backgroundColor: "rgba(37,99,235,0.55)",
-              borderColor: CHART_COLORS.violet,
-              borderWidth: 1,
-              borderRadius: 6,
-              maxBarThickness: 22,
-            }],
-          },
-          options: {
-            indexAxis: "y",
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: (ctx) => `重要性 ${ctx.parsed.x.toFixed(2)}%`,
+        fiEmpty?.classList.add("pg-hidden");
+        fiWrap?.classList.remove("pg-hidden");
+        const canvas = document.getElementById("exp-fi-chart");
+        if (canvas && typeof Chart !== "undefined") {
+          destroyChart("exp-fi");
+          _charts["exp-fi"] = new Chart(canvas, {
+            type: "bar",
+            data: {
+              labels: fi.map((x) => x.feature),
+              datasets: [{
+                label: "重要性",
+                data: fi.map((x) => Number((x.importance * 100).toFixed(2))),
+                backgroundColor: "rgba(37,99,235,0.55)",
+                borderColor: CHART_COLORS.blue,
+                borderWidth: 1,
+                borderRadius: 6,
+                maxBarThickness: 22,
+              }],
+            },
+            options: {
+              indexAxis: "y",
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => `重要性 ${ctx.parsed.x.toFixed(2)}%`,
+                  },
                 },
               },
-            },
-            scales: {
-              x: {
-                beginAtZero: true,
-                ticks: { callback: (v) => `${v}%` },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  ticks: { callback: (v) => `${v}%` },
+                },
+                y: { grid: { display: false } },
               },
-              y: { grid: { display: false } },
             },
-          },
-        });
+          });
+        }
+      } else {
+        fiWrap?.classList.add("pg-hidden");
+        if (fiEmpty) {
+          fiEmpty.classList.remove("pg-hidden");
+          fiEmpty.innerHTML = emptyHtml(
+            '<path d="M4 19V5"/><path d="M4 19h16"/>',
+            "暂无特征重要性",
+            "树模型（RF/XGB 等）训练后会有重要性；仅 SVM/集成时可能没有。",
+            ""
+          );
+        }
       }
     } catch (err) {
       showToast(err.message || "实验数据加载失败", "error");

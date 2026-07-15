@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from app.config import (
@@ -38,6 +39,11 @@ from app.ml.models import (
 )
 
 ProgressCallback = Callable[[float, str], None]
+CancelCallback = Callable[[], bool]
+
+
+class TrainingCancelled(Exception):
+    """Raised when the user cancels a running training job."""
 
 
 def _split_ratios(
@@ -95,7 +101,7 @@ def _fit_decision_tree_with_val(
     seed: int,
     labels: Sequence[str],
 ) -> tuple[Any, int | None, float | None]:
-    """Pick max_depth on validation F1 when val set exists; else default depth 10."""
+    """验证集上试几个 max_depth，选 F1 最好的。"""
     depths = (4, 6, 8, 10, 12)
     if X_val is None or y_val is None or len(y_val) == 0:
         model = DecisionTreeClassifier(max_depth=10, random_state=seed)
@@ -120,12 +126,50 @@ def _fit_decision_tree_with_val(
     return best_model, best_depth, best_score
 
 
+def _fit_random_forest_with_val(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_val: pd.DataFrame | None,
+    y_val: pd.Series | None,
+    seed: int,
+    labels: Sequence[str],
+) -> tuple[Any, int | None, float | None]:
+    """验证集上试少量 n_estimators（演示用小网格，别拖太久）。"""
+    n_list = (60, 100, 140)
+    if X_val is None or y_val is None or len(y_val) == 0:
+        model = RandomForestClassifier(
+            n_estimators=100, max_depth=14, n_jobs=-1, random_state=seed
+        )
+        model.fit(X_train, y_train)
+        return model, 100, None
+
+    best_model = None
+    best_n = n_list[0]
+    best_score = -1.0
+    for n_est in n_list:
+        cand = RandomForestClassifier(
+            n_estimators=n_est, max_depth=14, n_jobs=-1, random_state=seed
+        )
+        cand.fit(X_train, y_train)
+        pred = cand.predict(X_val)
+        score = float(
+            f1_score(y_val, pred, labels=list(labels), average="macro", zero_division=0)
+        )
+        if score > best_score:
+            best_score = score
+            best_model = cand
+            best_n = n_est
+    assert best_model is not None
+    return best_model, best_n, best_score
+
+
 def train_all(
     df: pd.DataFrame,
     model_names: Iterable[str] | None = None,
     seed: int = RANDOM_SEED,
     ratios: Sequence[float] | None = None,
     progress_callback: ProgressCallback | None = None,
+    should_cancel: CancelCallback | None = None,
 ) -> dict[str, Any]:
     """Train selected models, evaluate on held-out test, persist joblib + metrics.
 
@@ -207,24 +251,37 @@ def train_all(
         if progress_callback is not None:
             progress_callback(max(0.0, min(1.0, float(frac))), message)
 
-    _progress(0.02, "split dataset")
+    def _check_cancel() -> None:
+        if should_cancel is not None and should_cancel():
+            raise TrainingCancelled("training cancelled by user")
+
+    _progress(0.02, "划分数据集")
+    _check_cancel()
 
     for idx, name in enumerate(names):
-        _progress(0.05 + 0.85 * (idx / max(n_models, 1)), f"training {name}")
+        _check_cancel()
+        _progress(
+            0.05 + 0.85 * (idx / max(n_models, 1)),
+            f"训练 {name}（{idx + 1}/{n_models}）",
+        )
 
-        selected_depth: int | None = None
         if name == "decision_tree":
             model, selected_depth, _val_tune = _fit_decision_tree_with_val(
                 X_train, y_train, X_val, y_val, seed, label_list
             )
-            if selected_depth is not None:
-                tuned[name] = {"max_depth": selected_depth, "val_f1_tune": _val_tune}
+            tuned[name] = {"max_depth": selected_depth, "val_f1_tune": _val_tune}
+        elif name == "random_forest":
+            model, selected_n, _val_tune = _fit_random_forest_with_val(
+                X_train, y_train, X_val, y_val, seed, label_list
+            )
+            tuned[name] = {"n_estimators": selected_n, "val_f1_tune": _val_tune}
         else:
             model = build_model(name, seed=seed)
-            # XGBoost/LightGBM fit on int codes; wrap so predict/joblib emit string LABELS.
             if name in INTEGER_LABEL_MODELS:
                 model = LabeledClassifier(model, labels=label_list)
             model.fit(X_train, y_train)
+
+        _check_cancel()
 
         val_f1 = None
         if X_val is not None and y_val is not None and len(y_val):
@@ -251,8 +308,11 @@ def train_all(
         }
         if val_f1 is not None:
             public["val_f1"] = val_f1
-        if name in tuned and tuned[name].get("max_depth") is not None:
-            public["tuned_max_depth"] = tuned[name]["max_depth"]
+        if name in tuned:
+            if tuned[name].get("max_depth") is not None:
+                public["tuned_max_depth"] = tuned[name]["max_depth"]
+            if tuned[name].get("n_estimators") is not None:
+                public["tuned_n_estimators"] = tuned[name]["n_estimators"]
         metrics_map[name] = public
         cm_map[name] = m["confusion_matrix"]
 
@@ -282,8 +342,8 @@ def train_all(
         "n_test": int(len(X_test)),
         "tuning": tuned,
         "eval_protocol": (
-            "Models fit on train; decision_tree max_depth selected on val F1 when available; "
-            "public accuracy/F1 reported on held-out test only."
+            "fit on train; decision_tree max_depth and random_forest n_estimators "
+            "lightly tuned on val F1; public metrics on held-out test only."
         ),
     }
 

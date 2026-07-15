@@ -20,9 +20,13 @@
       <div class="pg-card-header">
         <div>
           <h2 class="pg-card-title">生成合成数据</h2>
-          <p class="pg-card-sub">四类标签均衡采样 · 17 维流级特征</p>
+          <p class="pg-card-sub">四类均衡 · 17 维流级特征（合成数据，非抓包）</p>
         </div>
         <span class="pg-badge pg-badge-primary">Generate</span>
+      </div>
+      <div class="pg-hint ok" style="margin-bottom:0.85rem;">
+        论文正式实验建议：每类 <strong>800</strong> · seed=<strong>42</strong> · noise=<strong>0.85</strong>
+        （点「填入论文参数」一键填好）
       </div>
       <form id="data-generate-form" class="pg-stack" style="gap:0.9rem;">
         <div class="pg-field-grid">
@@ -41,8 +45,9 @@
         </div>
         <p id="data-meta-line" class="pg-dim" style="margin:0;font-size:0.8rem;">加载数据集概览…</p>
         <div class="pg-flex pg-gap-2" style="flex-wrap:wrap;">
+          <button type="button" id="btn-paper-params" class="pg-btn pg-btn-secondary">填入论文参数</button>
           <button type="submit" id="btn-generate" class="pg-btn pg-btn-primary">生成数据集</button>
-          <a href="/train" class="pg-btn pg-btn-secondary">下一步：训练</a>
+          <a href="/train" class="pg-btn pg-btn-ghost">下一步：训练</a>
         </div>
       </form>
     </div>
@@ -53,13 +58,13 @@
           <h2 class="pg-card-title">上传 CSV</h2>
           <p class="pg-card-sub">CSV 需包含 17 个特征列和 label</p>
         </div>
-        <span class="pg-badge pg-badge-warning">Stub</span>
+        <span class="pg-badge pg-badge-info">Upload</span>
       </div>
       <div class="pg-upload-zone">
         <input type="file" id="data-upload" accept=".csv,text/csv" />
         <div class="pg-upload-copy">
           <strong>点击选择 CSV 文件</strong>
-          <p class="pg-muted">需包含 17 维特征列与 label；成品阶段将完整解析入库。</p>
+          <p class="pg-muted">列名需与系统 FEATURE_COLUMNS 一致，并含 label。最大约 20MB。</p>
         </div>
       </div>
       <p class="pg-dim" style="margin:0.85rem 0 0;font-size:0.8rem;">

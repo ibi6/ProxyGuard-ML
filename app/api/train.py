@@ -59,6 +59,17 @@ def get_train_task(task_id: str) -> dict[str, Any]:
     return task
 
 
+@router.post("/train/{task_id}/cancel", dependencies=[Depends(require_api_token)])
+def cancel_train(task_id: str) -> dict[str, Any]:
+    """取消进行中的训练（当前模型训完后停止）。"""
+    if USE_MOCK:
+        raise HTTPException(status_code=400, detail="mock mode does not support cancel")
+    try:
+        return train_service.cancel(task_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @router.get("/models")
 def list_models() -> dict[str, Any]:
     if USE_MOCK:
