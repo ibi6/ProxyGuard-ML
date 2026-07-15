@@ -1,143 +1,167 @@
-# ProxyGuard ML
+<div align="center">
 
-本科毕业设计项目：**基于集成学习的加密代理流量识别**。
+<img src="assets/logo.svg" width="72" alt="ProxyGuard ML" />
 
-不解密 TLS 载荷，只用流级统计特征（17 维），对下面 4 类做分类：
+# ProxyGuard ML · 加密代理流量识别
 
-- `normal_https`
-- `shadowsocks`
-- `trojan`
-- `vmess`
+**基于集成学习的加密代理流量识别系统**
 
-技术：Python + FastAPI + scikit-learn / XGBoost / LightGBM + SQLite + 简单网页控制台。
+FastAPI · scikit-learn · XGBoost · LightGBM · Jinja2 · SQLite
 
-[English](README.en.md)
+[English](README.en.md) · [简体中文](README.md)
+
+<br/>
+
+![Stars](https://img.shields.io/github/stars/ibi6/ProxyGuard-ML?style=for-the-badge&label=STARS&logo=github&color=0969da)
+![Forks](https://img.shields.io/github/forks/ibi6/ProxyGuard-ML?style=for-the-badge&label=FORKS&logo=github&color=1f883d)
+![Last Commit](https://img.shields.io/github/last-commit/ibi6/ProxyGuard-ML?style=for-the-badge&label=LAST%20COMMIT&color=238636)
+![CI](https://img.shields.io/github/actions/workflow/status/ibi6/ProxyGuard-ML/ci.yml?branch=main&style=for-the-badge&label=CI)
+
+<br/>
+
+![Python](https://img.shields.io/badge/PYTHON-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FASTAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/SCIKIT--LEARN-1.5-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBOOST-2.1-E85D04?style=for-the-badge)
+![LightGBM](https://img.shields.io/badge/LIGHTGBM-4.5-9B59B6?style=for-the-badge)
+![License](https://img.shields.io/badge/LICENSE-MIT-2ea44f?style=for-the-badge)
+
+<br/>
+
+[Features](#features) ·
+[Architecture](#architecture) ·
+[Quick Start](#quick-start) ·
+[API](#api) ·
+[Benchmark](#benchmark) ·
+[Docker](#docker)
+
+</div>
+
+<p align="center">
+  <img src="assets/banner.svg" alt="banner" width="100%" />
+</p>
 
 ---
 
-## 说明（很重要）
+## Features
 
-默认数据是**自己生成的合成特征**（按类别设均值再加噪声），方便复现实验。  
-**不是**网卡抓包，也**没有**解析 PCAP。论文和答辩里要按合成数据来讲。
+| | |
+|:--|:--|
+| **No payload decrypt** | 17-D flow statistics only (length / IAT / direction / scale / entropy) |
+| **8-model zoo** | DT · SVM · RF · AdaBoost · XGBoost · LightGBM · Soft Voting · Stacking |
+| **Web console** | Data → Train → Predict → Experiments → Settings |
+| **Reproducible** | Seeded synthetic generator + CSV upload (aligned schema) |
+| **Ops-ready bits** | Background train jobs, SQLite task log, zip export, optional API token |
+| **CI / Docker** | GitHub Actions + Compose |
 
-正式实验参数（和仓库里报告一致）：
+**Task:** 4-class supervised learning — `normal_https` / `shadowsocks` / `trojan` / `vmess`
 
-| 参数 | 值 |
-|------|-----|
-| 每类样本 | 800 |
-| 总数 | 3200 |
-| seed | 42 |
-| noise | 0.85 |
-| 划分 | 0.7 / 0.15 / 0.15 |
-| 较好结果 | Soft Voting，macro-F1 约 0.75 |
+> Default data is **synthetic** (class-conditional Gaussians with controlled overlap).  
+> This repo does **not** ship PCAP capture. Metrics reflect lab separability, not open-internet DPI accuracy.
 
 ---
 
-## 环境
+## Architecture
 
-- Python 3.10 及以上
-- Windows / macOS / Linux 都行
+<p align="center">
+  <img src="assets/architecture.svg" width="100%" alt="architecture" />
+</p>
+
+```text
+Browser (Jinja2 + Chart.js)
+        │
+        ▼
+FastAPI  /api/data | train | predict | experiments | settings
+        │
+        ▼
+Services → ML core (generator · train · evaluate · predict)
+        │
+        ▼
+data/ · models/*.joblib · reports/ · SQLite
+```
+
+<p align="center">
+  <img src="assets/pipeline.svg" width="100%" alt="pipeline" />
+</p>
+
+---
+
+## Quick Start
 
 ```bash
 git clone https://github.com/ibi6/ProxyGuard-ML.git
 cd ProxyGuard-ML
-
 python -m venv .venv
-# Windows:
+
+# Windows PowerShell
 .\.venv\Scripts\Activate.ps1
-# Linux/macOS:
+# macOS / Linux
 # source .venv/bin/activate
 
-pip install -r requirements.txt
+pip install -U pip && pip install -r requirements.txt
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
----
+| URL | |
+|-----|--|
+| http://127.0.0.1:8000 | Console |
+| http://127.0.0.1:8000/docs | OpenAPI |
+| http://127.0.0.1:8000/api/health | Health |
 
-## 启动
-
-在项目根目录：
-
-```bash
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-浏览器打开：http://127.0.0.1:8000  
-
-接口文档：http://127.0.0.1:8000/docs  
-
-健康检查：http://127.0.0.1:8000/api/health
-
-### 页面
-
-| 地址 | 干什么 |
-|------|--------|
-| `/` | 总览 |
-| `/data` | 生成/上传数据 |
-| `/train` | 训练模型 |
-| `/predict` | 输入特征做识别 |
-| `/experiments` | 看指标和导出 |
-| `/settings` | 种子、划分比例等 |
-
-### 建议演示顺序
-
-1. 数据页：每类生成 800，seed=42，noise=0.85  
-2. 训练页：至少勾选 random_forest、xgboost、voting  
-3. 等任务成功  
-4. 实验页看对比  
-5. 识别页用默认特征试一条  
-
-也可以不启动网页，直接跑脚本：
+**Demo loop:** generate ~800 samples/class → train (include `voting`) → predict → export experiments.
 
 ```bash
 python scripts/run_experiments.py --n-per-class 800 --seed 42 --noise 0.85
-```
-
----
-
-## 模型
-
-| 名称 | 备注 |
-|------|------|
-| decision_tree | 基线；验证集上会试几个 max_depth |
-| svm | RBF，前面有标准化 |
-| random_forest | Bagging |
-| adaboost | Boosting |
-| xgboost / lightgbm | 梯度提升 |
-| voting | 软投票 |
-| stacking | 堆叠，元模型用逻辑回归 |
-
-特征列名在 `app/config.py` 的 `FEATURE_COLUMNS` 里，上传 CSV 必须带 `label` 和这 17 列。
-
----
-
-## 目录
-
-```text
-app/          # 后端 + 页面
-  api/        # 接口
-  services/   # 业务
-  ml/         # 生成数据、训练、预测
-  templates/  # 页面
-  static/     # css/js
-tests/        # pytest
-scripts/      # 离线实验
-data/         # 生成的数据（本地）
-models/       # joblib（本地）
-reports/      # 指标和图
-docs/         # 说明和 schema
-```
-
----
-
-## 测试
-
-```bash
 pytest -q
 ```
 
 ---
 
-## Docker（可选）
+## API
+
+| Method | Path | |
+|--------|------|--|
+| GET | `/api/health` | Liveness |
+| GET | `/api/system` | Runtime snapshot |
+| POST | `/api/data/generate` | Synthetic data |
+| POST | `/api/data/upload` | CSV (≤20MB, schema-checked) |
+| POST | `/api/train` | Start job (single-flight) |
+| GET | `/api/train/{id}` | Task status + progress |
+| POST | `/api/predict` | Inference |
+| GET | `/api/predict/stats` | Predict log count |
+| GET | `/api/experiments` | Metrics |
+| GET | `/api/report/export` | Zip bundle |
+| GET/PUT | `/api/settings` | Seed & split ratios |
+
+Optional: set `PROXYGUARD_TOKEN` → write APIs require header `X-API-Token`.  
+Browser: `localStorage.setItem('pg_api_token', '...')`.
+
+---
+
+## Benchmark
+
+<p align="center">
+  <img src="assets/leaderboard.svg" width="100%" alt="leaderboard" />
+</p>
+
+Synthetic protocol (`n_per_class=800`, `seed=42`, `noise=0.85`):
+
+| Rank | Model | Acc | Macro-F1 |
+|:----:|-------|----:|---------:|
+| 1 | **Soft Voting** | **0.752** | **0.752** |
+| 2 | SVM | 0.750 | 0.748 |
+| 3 | Stacking | 0.746 | 0.744 |
+| 4 | Random Forest | 0.740 | 0.735 |
+| 5 | XGBoost | 0.727 | 0.725 |
+| 6 | LightGBM | 0.725 | 0.723 |
+| 7 | AdaBoost | 0.690 | 0.694 |
+| 8 | Decision Tree | 0.600 | 0.604 |
+
+Decision tree `max_depth` is lightly tuned on the validation split; **reported metrics are always test-set**.
+
+---
+
+## Docker
 
 ```bash
 docker compose up --build
@@ -145,28 +169,34 @@ docker compose up --build
 
 ---
 
-## 配置
+## Layout
 
-| 环境变量 | 作用 |
-|----------|------|
-| `USE_MOCK=true` | 走假数据/假指标，**答辩不要开** |
-| `PROXYGUARD_TOKEN=xxx` | 写接口要带头 `X-API-Token`；网页可在控制台 `localStorage.setItem('pg_api_token','xxx')` |
-
-设置页改的种子和 train/val/test 比例会存 SQLite，**下次训练会用到**。
-
----
-
-## 已知限制
-
-1. 合成数据，不能当真实代理检测率  
-2. 没有登录系统（本地用）；需要可设 Token  
-3. 训练在进程里开线程，一次只跑一个任务  
-4. 没有 PCAP 解析，真流量要自己提成 17 维 CSV 再上传  
+```text
+app/           # API · services · ML · UI
+tests/         # pytest
+scripts/       # offline experiments
+docs/          # design notes · schema.sql
+assets/        # diagrams for this README
+data/ models/ reports/   # runtime artifacts (local)
+```
 
 ---
 
-## 许可证
+## Limits
 
-MIT，见 [LICENSE](LICENSE)。
+- Synthetic-by-default (not real proxy captures)
+- No multi-user auth by default (optional token only)
+- In-process training thread; one job at a time
+- No PCAP pipeline — upload 17-D CSV for external features
 
-别拿去未授权监听别人网络。写论文请写清楚数据是合成还是真实。
+---
+
+## License
+
+[MIT](LICENSE). Do not use for unauthorized monitoring. Always state data source when publishing numbers.
+
+<p align="center">
+  <img src="assets/social.svg" width="100%" alt="card" />
+  <br/>
+  <a href="https://github.com/ibi6/ProxyGuard-ML"><b>github.com/ibi6/ProxyGuard-ML</b></a>
+</p>
