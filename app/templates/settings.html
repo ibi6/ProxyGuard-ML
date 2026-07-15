@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}系统设置 · ProxyGuard ML{% endblock %}
+{% block kicker %}分析{% endblock %}
+{% block page_title %}系统设置{% endblock %}
+{% block page_desc %}随机种子、数据划分比例与默认生成参数{% endblock %}
+
+{% block topbar_actions %}
+<span class="pg-status-pill">
+  <span class="pg-status-dot"></span>
+  <span class="hide-sm">服务在线</span>
+</span>
+<button type="submit" form="settings-form" id="btn-settings-save" class="pg-btn pg-btn-primary pg-btn-sm">保存设置</button>
+{% endblock %}
+
+{% block content %}
+<div class="pg-stack" data-page="settings">
+  <div class="pg-card pg-card-pad" style="max-width:52rem;">
+    <div class="pg-card-header">
+      <div>
+        <h2 class="pg-card-title">运行参数</h2>
+        <p class="pg-card-sub">保存后立即写入 Mock Store（内存），刷新页面仍可读取</p>
+      </div>
+      <span class="pg-badge pg-badge-primary">Settings</span>
+    </div>
+
+    <form id="settings-form" class="pg-stack" style="gap:1rem;">
+      <div class="pg-field-grid">
+        <div class="pg-field">
+          <label class="pg-label" for="set-seed">随机种子 (seed)</label>
+          <input class="pg-input" id="set-seed" type="number" value="42" required />
+        </div>
+        <div class="pg-field">
+          <label class="pg-label" for="set-n">默认每类样本数</label>
+          <input class="pg-input" id="set-n" type="number" min="1" max="50000" value="1000" required />
+        </div>
+        <div class="pg-field">
+          <label class="pg-label" for="set-noise">默认噪声</label>
+          <input class="pg-input" id="set-noise" type="number" min="0" max="5" step="0.01" value="0.85" required />
+        </div>
+      </div>
+
+      <div>
+        <div class="pg-flex-between" style="margin-bottom:0.55rem;">
+          <span class="pg-label" style="margin:0;">数据划分比例</span>
+          <span id="set-ratio-hint" class="pg-hint">—</span>
+        </div>
+        <div class="pg-field-grid">
+          <div class="pg-field">
+            <label class="pg-label" for="set-train">训练集</label>
+            <input class="pg-input" id="set-train" type="number" min="0" max="1" step="0.01" value="0.70" required />
+          </div>
+          <div class="pg-field">
+            <label class="pg-label" for="set-val">验证集</label>
+            <input class="pg-input" id="set-val" type="number" min="0" max="1" step="0.01" value="0.15" required />
+          </div>
+          <div class="pg-field">
+            <label class="pg-label" for="set-test">测试集</label>
+            <input class="pg-input" id="set-test" type="number" min="0" max="1" step="0.01" value="0.15" required />
+          </div>
+        </div>
+      </div>
+
+      <div class="pg-flex pg-gap-2" style="flex-wrap:wrap;">
+        <button type="submit" class="pg-btn pg-btn-primary">保存设置</button>
+        <a href="/data" class="pg-btn pg-btn-secondary">返回数据页</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="pg-card pg-card-pad" style="max-width:52rem;">
+    <div class="pg-card-header">
+      <div>
+        <h2 class="pg-card-title">说明</h2>
+        <p class="pg-card-sub">展示版配置项</p>
+      </div>
+    </div>
+    <ul class="pg-list">
+      <li>seed / 划分比例 / 默认 n_per_class 会写入 <code class="pg-code">/api/settings</code>。</li>
+      <li>数据生成表单会优先读取默认 seed 与 n_per_class。</li>
+      <li>成品阶段将持久化到数据库，并驱动真实训练切分。</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

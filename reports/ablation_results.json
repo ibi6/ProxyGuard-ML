@@ -1,0 +1,269 @@
+{
+  "noise_sweep": {
+    "fixed_n_per_class": 500,
+    "rows": [
+      {
+        "n_per_class": 500,
+        "n_samples": 2000,
+        "noise": 0.55,
+        "seed": 42,
+        "best_model": "svm",
+        "best_f1": 0.86,
+        "metrics": {
+          "decision_tree": {
+            "accuracy": 0.7467,
+            "f1": 0.7468
+          },
+          "svm": {
+            "accuracy": 0.86,
+            "f1": 0.86
+          },
+          "random_forest": {
+            "accuracy": 0.85,
+            "f1": 0.8501
+          },
+          "adaboost": {
+            "accuracy": 0.77,
+            "f1": 0.7716
+          },
+          "xgboost": {
+            "accuracy": 0.8467,
+            "f1": 0.8478
+          },
+          "lightgbm": {
+            "accuracy": 0.8367,
+            "f1": 0.8377
+          },
+          "voting": {
+            "accuracy": 0.8567,
+            "f1": 0.857
+          },
+          "stacking": {
+            "accuracy": 0.8567,
+            "f1": 0.8571
+          }
+        }
+      },
+      {
+        "n_per_class": 500,
+        "n_samples": 2000,
+        "noise": 0.85,
+        "seed": 42,
+        "best_model": "stacking",
+        "best_f1": 0.7379,
+        "metrics": {
+          "decision_tree": {
+            "accuracy": 0.5667,
+            "f1": 0.5679
+          },
+          "svm": {
+            "accuracy": 0.73,
+            "f1": 0.7303
+          },
+          "random_forest": {
+            "accuracy": 0.69,
+            "f1": 0.6857
+          },
+          "adaboost": {
+            "accuracy": 0.71,
+            "f1": 0.7106
+          },
+          "xgboost": {
+            "accuracy": 0.7233,
+            "f1": 0.7224
+          },
+          "lightgbm": {
+            "accuracy": 0.7233,
+            "f1": 0.7228
+          },
+          "voting": {
+            "accuracy": 0.71,
+            "f1": 0.7102
+          },
+          "stacking": {
+            "accuracy": 0.7367,
+            "f1": 0.7379
+          }
+        }
+      },
+      {
+        "n_per_class": 500,
+        "n_samples": 2000,
+        "noise": 1.15,
+        "seed": 42,
+        "best_model": "xgboost",
+        "best_f1": 0.6451,
+        "metrics": {
+          "decision_tree": {
+            "accuracy": 0.4933,
+            "f1": 0.4897
+          },
+          "svm": {
+            "accuracy": 0.6367,
+            "f1": 0.6323
+          },
+          "random_forest": {
+            "accuracy": 0.6067,
+            "f1": 0.599
+          },
+          "adaboost": {
+            "accuracy": 0.5733,
+            "f1": 0.5741
+          },
+          "xgboost": {
+            "accuracy": 0.6467,
+            "f1": 0.6451
+          },
+          "lightgbm": {
+            "accuracy": 0.6467,
+            "f1": 0.6438
+          },
+          "voting": {
+            "accuracy": 0.61,
+            "f1": 0.6059
+          },
+          "stacking": {
+            "accuracy": 0.6133,
+            "f1": 0.611
+          }
+        }
+      }
+    ]
+  },
+  "size_sweep": {
+    "fixed_noise": 0.85,
+    "rows": [
+      {
+        "n_per_class": 300,
+        "n_samples": 1200,
+        "noise": 0.85,
+        "seed": 42,
+        "best_model": "svm",
+        "best_f1": 0.7448,
+        "metrics": {
+          "decision_tree": {
+            "accuracy": 0.5778,
+            "f1": 0.5779
+          },
+          "svm": {
+            "accuracy": 0.7444,
+            "f1": 0.7448
+          },
+          "random_forest": {
+            "accuracy": 0.6944,
+            "f1": 0.6824
+          },
+          "adaboost": {
+            "accuracy": 0.6278,
+            "f1": 0.6437
+          },
+          "xgboost": {
+            "accuracy": 0.7111,
+            "f1": 0.7084
+          },
+          "lightgbm": {
+            "accuracy": 0.65,
+            "f1": 0.648
+          },
+          "voting": {
+            "accuracy": 0.6944,
+            "f1": 0.6934
+          },
+          "stacking": {
+            "accuracy": 0.7111,
+            "f1": 0.7111
+          }
+        }
+      },
+      {
+        "n_per_class": 500,
+        "n_samples": 2000,
+        "noise": 0.85,
+        "seed": 42,
+        "best_model": "stacking",
+        "best_f1": 0.7379,
+        "metrics": {
+          "decision_tree": {
+            "accuracy": 0.5667,
+            "f1": 0.5679
+          },
+          "svm": {
+            "accuracy": 0.73,
+            "f1": 0.7303
+          },
+          "random_forest": {
+            "accuracy": 0.69,
+            "f1": 0.6857
+          },
+          "adaboost": {
+            "accuracy": 0.71,
+            "f1": 0.7106
+          },
+          "xgboost": {
+            "accuracy": 0.7233,
+            "f1": 0.7224
+          },
+          "lightgbm": {
+            "accuracy": 0.7233,
+            "f1": 0.7228
+          },
+          "voting": {
+            "accuracy": 0.71,
+            "f1": 0.7102
+          },
+          "stacking": {
+            "accuracy": 0.7367,
+            "f1": 0.7379
+          }
+        }
+      },
+      {
+        "n_per_class": 800,
+        "n_samples": 3200,
+        "noise": 0.85,
+        "seed": 42,
+        "best_model": "voting",
+        "best_f1": 0.7515,
+        "metrics": {
+          "decision_tree": {
+            "accuracy": 0.6,
+            "f1": 0.6035
+          },
+          "svm": {
+            "accuracy": 0.75,
+            "f1": 0.7477
+          },
+          "random_forest": {
+            "accuracy": 0.7396,
+            "f1": 0.7353
+          },
+          "adaboost": {
+            "accuracy": 0.6896,
+            "f1": 0.6939
+          },
+          "xgboost": {
+            "accuracy": 0.7271,
+            "f1": 0.7248
+          },
+          "lightgbm": {
+            "accuracy": 0.725,
+            "f1": 0.7233
+          },
+          "voting": {
+            "accuracy": 0.7521,
+            "f1": 0.7515
+          },
+          "stacking": {
+            "accuracy": 0.7458,
+            "f1": 0.744
+          }
+        }
+      }
+    ]
+  },
+  "main_formal": {
+    "n_per_class": 800,
+    "noise": 0.85,
+    "note": "formal metrics remain in reports/experiment_summary.json"
+  }
+}

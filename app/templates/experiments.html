@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}实验对比 · ProxyGuard ML{% endblock %}
+{% block kicker %}分析{% endblock %}
+{% block page_title %}实验对比{% endblock %}
+{% block page_desc %}对比基学习器与集成模型的准确率、F1 与混淆矩阵{% endblock %}
+
+{% block topbar_actions %}
+<span class="pg-status-pill">
+  <span class="pg-status-dot"></span>
+  <span class="hide-sm">服务在线</span>
+</span>
+<button type="button" id="btn-export-report" class="pg-btn pg-btn-primary pg-btn-sm">导出 JSON 报告</button>
+{% endblock %}
+
+{% block content %}
+<div class="pg-stack" data-page="experiments">
+  <div id="exp-empty"></div>
+
+  <div id="exp-content" class="pg-stack pg-hidden">
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">模型对比表</h2>
+          <p class="pg-card-sub">Accuracy · Precision · Recall · F1</p>
+        </div>
+        <span class="pg-badge pg-badge-success">Comparison</span>
+      </div>
+      <div id="exp-table-body"></div>
+    </div>
+
+    <div class="pg-grid pg-grid-2">
+      <div class="pg-card pg-card-pad">
+        <div class="pg-card-header">
+          <div>
+            <h2 class="pg-card-title">混淆矩阵</h2>
+            <p class="pg-card-sub">最优模型示意热力（展示版）</p>
+          </div>
+        </div>
+        <div id="exp-cm-body"></div>
+      </div>
+
+      <div class="pg-card pg-card-pad">
+        <div class="pg-card-header">
+          <div>
+            <h2 class="pg-card-title">特征重要性</h2>
+            <p class="pg-card-sub">Top 特征条形图</p>
+          </div>
+        </div>
+        <div id="exp-fi-wrap" class="pg-chart-box pg-hidden">
+          <canvas id="exp-fi-chart"></canvas>
+        </div>
+        <div id="exp-fi-empty"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

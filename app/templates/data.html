@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}数据管理 · ProxyGuard ML{% endblock %}
+{% block kicker %}工作台{% endblock %}
+{% block page_title %}数据管理{% endblock %}
+{% block page_desc %}生成合成流级特征数据集，或上传 CSV 进行管理{% endblock %}
+
+{% block topbar_actions %}
+<span class="pg-status-pill">
+  <span class="pg-status-dot"></span>
+  <span class="hide-sm">服务在线</span>
+</span>
+<span id="data-summary-badge" class="pg-badge pg-badge-neutral">加载中</span>
+{% endblock %}
+
+{% block content %}
+<div class="pg-stack" data-page="data">
+  <div class="pg-grid pg-grid-2">
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">生成合成数据</h2>
+          <p class="pg-card-sub">四类标签均衡采样 · 17 维流级特征</p>
+        </div>
+        <span class="pg-badge pg-badge-primary">Generate</span>
+      </div>
+      <form id="data-generate-form" class="pg-stack" style="gap:0.9rem;">
+        <div class="pg-field-grid">
+          <div class="pg-field">
+            <label class="pg-label" for="gen-n">每类样本数</label>
+            <input class="pg-input" id="gen-n" name="n_per_class" type="number" min="1" max="50000" value="800" required />
+          </div>
+          <div class="pg-field">
+            <label class="pg-label" for="gen-seed">随机种子</label>
+            <input class="pg-input" id="gen-seed" name="seed" type="number" value="42" required />
+          </div>
+          <div class="pg-field">
+            <label class="pg-label" for="gen-noise">噪声强度</label>
+            <input class="pg-input" id="gen-noise" name="noise" type="number" min="0" max="5" step="0.01" value="0.85" required />
+          </div>
+        </div>
+        <p id="data-meta-line" class="pg-dim" style="margin:0;font-size:0.8rem;">加载数据集概览…</p>
+        <div class="pg-flex pg-gap-2" style="flex-wrap:wrap;">
+          <button type="submit" id="btn-generate" class="pg-btn pg-btn-primary">生成数据集</button>
+          <a href="/train" class="pg-btn pg-btn-secondary">下一步：训练</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">上传 CSV</h2>
+          <p class="pg-card-sub">展示版接收文件并进入解析队列</p>
+        </div>
+        <span class="pg-badge pg-badge-warning">Stub</span>
+      </div>
+      <div class="pg-upload-zone">
+        <input type="file" id="data-upload" accept=".csv,text/csv" />
+        <div class="pg-upload-copy">
+          <strong>点击选择 CSV 文件</strong>
+          <p class="pg-muted">需包含 17 维特征列与 label；成品阶段将完整解析入库。</p>
+        </div>
+      </div>
+      <p class="pg-dim" style="margin:0.85rem 0 0;font-size:0.8rem;">
+        标签集合：Normal HTTPS · Shadowsocks · Trojan · VMess
+      </p>
+    </div>
+  </div>
+
+  <div class="pg-grid pg-grid-2">
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">类别分布</h2>
+          <p class="pg-card-sub">四类协议样本占比</p>
+        </div>
+      </div>
+      <div id="data-dist-wrap" class="pg-chart-box pg-chart-box-sm pg-hidden">
+        <canvas id="data-dist-chart"></canvas>
+      </div>
+      <div id="data-dist-empty"></div>
+    </div>
+
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">特征预览</h2>
+          <p class="pg-card-sub">内存数据集前若干行</p>
+        </div>
+      </div>
+      <div id="data-preview-body"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

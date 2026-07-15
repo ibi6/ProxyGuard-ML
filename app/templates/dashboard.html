@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}总览看板 · ProxyGuard ML{% endblock %}
+{% block kicker %}工作台{% endblock %}
+{% block page_title %}总览看板{% endblock %}
+{% block page_desc %}查看数据集规模、模型表现与近期识别活动{% endblock %}
+
+{% block topbar_actions %}
+<span class="pg-status-pill">
+  <span class="pg-status-dot"></span>
+  <span class="hide-sm">服务在线</span>
+</span>
+<button type="button" id="btn-dash-refresh" class="pg-btn pg-btn-secondary pg-btn-sm">刷新</button>
+<a href="/data" class="pg-btn pg-btn-primary pg-btn-sm">生成数据</a>
+{% endblock %}
+
+{% block content %}
+<div class="pg-stack" data-page="dashboard">
+  <div class="pg-grid pg-grid-4">
+    <div class="pg-card pg-card-pad pg-metric">
+      <div class="pg-flex-between">
+        <span class="pg-metric-label">样本总量</span>
+        <span class="pg-icon-tile">
+          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        </span>
+      </div>
+      <div class="pg-metric-value" id="kpi-samples">—</div>
+      <div class="pg-metric-trend" id="kpi-samples-trend">加载中…</div>
+    </div>
+    <div class="pg-card pg-card-pad pg-metric">
+      <div class="pg-flex-between">
+        <span class="pg-metric-label">最优 F1</span>
+        <span class="pg-icon-tile success">
+          <svg viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+        </span>
+      </div>
+      <div class="pg-metric-value" id="kpi-f1">—</div>
+      <div class="pg-metric-trend" id="kpi-f1-trend">完成训练后展示</div>
+    </div>
+    <div class="pg-card pg-card-pad pg-metric">
+      <div class="pg-flex-between">
+        <span class="pg-metric-label">已训练模型</span>
+        <span class="pg-icon-tile info">
+          <svg viewBox="0 0 24 24"><path d="M12 3v6"/><rect x="4" y="11" width="16" height="9" rx="2"/></svg>
+        </span>
+      </div>
+      <div class="pg-metric-value" id="kpi-models">0</div>
+      <div class="pg-metric-trend" id="kpi-models-trend">Voting / Stacking 就绪</div>
+    </div>
+    <div class="pg-card pg-card-pad pg-metric">
+      <div class="pg-flex-between">
+        <span class="pg-metric-label">识别次数</span>
+        <span class="pg-icon-tile warning">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </span>
+      </div>
+      <div class="pg-metric-value" id="kpi-predict">0</div>
+      <div class="pg-metric-trend">本机累计（展示版）</div>
+    </div>
+  </div>
+
+  <div class="pg-grid pg-grid-2">
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">模型准确率</h2>
+          <p class="pg-card-sub">已训练模型 Accuracy 对比（Chart.js）</p>
+        </div>
+        <span class="pg-badge pg-badge-primary">实时</span>
+      </div>
+      <div id="dash-chart-wrap" class="pg-chart-box pg-hidden">
+        <canvas id="dash-acc-chart" height="220"></canvas>
+      </div>
+      <div id="dash-chart-empty"></div>
+    </div>
+
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">最近训练任务</h2>
+          <p class="pg-card-sub">任务状态 · 最优模型 · F1</p>
+        </div>
+        <a href="/train" class="pg-btn pg-btn-ghost pg-btn-sm">去训练</a>
+      </div>
+      <div id="dash-tasks-body"></div>
+    </div>
+  </div>
+
+  <div class="pg-card pg-card-pad">
+    <div class="pg-card-header">
+      <div>
+        <h2 class="pg-card-title">快速开始</h2>
+        <p class="pg-card-sub">前端展示版推荐演示流程</p>
+      </div>
+    </div>
+    <div class="pg-grid pg-grid-3">
+      <a href="/data" class="pg-step-card">
+        <span class="pg-badge pg-badge-primary">1</span>
+        <h3>准备数据</h3>
+        <p class="pg-muted">生成合成流特征（建议 800/类），或上传 CSV 进入队列。</p>
+      </a>
+      <a href="/train" class="pg-step-card">
+        <span class="pg-badge pg-badge-info">2</span>
+        <h3>训练集成模型</h3>
+        <p class="pg-muted">勾选 RF / XGB / LGBM / Voting / Stacking，查看指标摘要。</p>
+      </a>
+      <a href="/predict" class="pg-step-card">
+        <span class="pg-badge pg-badge-success">3</span>
+        <h3>在线识别</h3>
+        <p class="pg-muted">提交流级特征，获得协议类别、置信度与所用模型。</p>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

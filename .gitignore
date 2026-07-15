@@ -1,0 +1,64 @@
+# Local tooling / agent state
+.superpowers/
+.omc/
+scripts/.omc/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Runtime data (regenerate locally)
+data/synthetic/
+data/uploaded/
+data/active.json
+models/*.joblib
+!models/.gitkeep
+reports/figures/*
+!reports/figures/.gitkeep
+reports/metrics.json
+reports/experiment_summary.json
+reports/ablation_run.log
+*.db
+app/proxyguard.db
+
+# Thesis / defense materials (local only — not part of the public project)
+论文/
+docs/thesis/
+docs/templates/
+docs/result-analysis-template.md
+docs/superpowers/
+scripts/build_thesis_docx.py
+scripts/build_defense_ppt.js
+scripts/thesis_body_extra.py
+scripts/_extract_handbook.py
+scripts/_patch_thesis_body.py
+scripts/_fix_section_order.py
+scripts/_force_length_round2.py
+scripts/_force_more_length.py
+scripts/_inject_thesis_length.py
+scripts/_patch_ablation_section.py
+
+# One-off scratch
+*.tmp
+*.bak

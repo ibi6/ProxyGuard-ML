@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}模型训练 · ProxyGuard ML{% endblock %}
+{% block kicker %}工作台{% endblock %}
+{% block page_title %}模型训练{% endblock %}
+{% block page_desc %}配置基学习器与集成策略，启动训练任务{% endblock %}
+
+{% block topbar_actions %}
+<span class="pg-status-pill">
+  <span class="pg-status-dot"></span>
+  <span class="hide-sm">服务在线</span>
+</span>
+<button type="button" id="btn-select-defaults" class="pg-btn pg-btn-ghost pg-btn-sm">推荐组合</button>
+<button type="button" id="btn-select-all" class="pg-btn pg-btn-secondary pg-btn-sm">全选</button>
+<button type="button" id="btn-train" class="pg-btn pg-btn-primary pg-btn-sm">开始训练</button>
+{% endblock %}
+
+{% block content %}
+<div class="pg-stack" data-page="train">
+  <div class="pg-card pg-card-pad">
+    <div class="pg-card-header">
+      <div>
+        <h2 class="pg-card-title">选择模型</h2>
+        <p class="pg-card-sub">基学习器 + Voting / Stacking 集成 · 可多选</p>
+      </div>
+      <span class="pg-badge pg-badge-info">8 模型</span>
+    </div>
+    <div id="train-model-grid" class="pg-check-grid"></div>
+    <div class="pg-flex pg-gap-2 pg-mt-4" style="flex-wrap:wrap;">
+      <button type="button" class="pg-btn pg-btn-primary" onclick="document.getElementById('btn-train').click()">开始训练</button>
+      <a href="/experiments" class="pg-btn pg-btn-secondary">查看实验对比</a>
+    </div>
+  </div>
+
+  <div class="pg-grid pg-grid-2">
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">任务状态</h2>
+          <p class="pg-card-sub">最近一次训练任务</p>
+        </div>
+      </div>
+      <div id="train-status-card"></div>
+    </div>
+
+    <div class="pg-card pg-card-pad">
+      <div class="pg-card-header">
+        <div>
+          <h2 class="pg-card-title">指标摘要</h2>
+          <p class="pg-card-sub">Accuracy · Precision · Recall · F1</p>
+        </div>
+      </div>
+      <div id="train-metrics-body"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
