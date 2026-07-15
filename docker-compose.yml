@@ -1,0 +1,14 @@
+services:
+  proxyguard:
+    build: .
+    image: proxyguard-ml:local
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist datasets, trained models and reports across restarts
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+    environment:
+      - USE_MOCK=false
+    restart: unless-stopped

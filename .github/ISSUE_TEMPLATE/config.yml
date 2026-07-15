@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/ibi6/ProxyGuard-ML/blob/main/docs/system-design.md
+    about: Read system design & experiment docs before opening an issue.
