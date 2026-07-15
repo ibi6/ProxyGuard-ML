@@ -83,6 +83,14 @@ const PREDICT_COUNT_KEY = "pg_predict_count";
 
 let _charts = {};
 
+function getApiToken() {
+  try {
+    return (window.localStorage.getItem("pg_api_token") || "").trim();
+  } catch (_) {
+    return "";
+  }
+}
+
 async function api(path, options = {}) {
   const opts = { ...options };
   const headers = { ...(options.headers || {}) };
@@ -90,6 +98,8 @@ async function api(path, options = {}) {
   if (!(opts.body instanceof FormData)) {
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
   }
+  const token = getApiToken();
+  if (token) headers["X-API-Token"] = token;
   const res = await fetch(path, { ...opts, headers });
   if (!res.ok) {
     let detail = res.statusText;
@@ -252,6 +262,30 @@ function initShell() {
     else openSidebar();
   });
   overlay?.addEventListener("click", closeSidebar);
+
+  // Real health probe (template no longer hardcodes "online")
+  const healthText = document.getElementById("pg-health-text");
+  const healthDot = document.getElementById("pg-health-dot");
+  api("/api/health")
+    .then((h) => {
+      if (healthText) {
+        const bits = ["服务在线"];
+        if (h.use_mock) bits.push("MOCK");
+        if (h.auth_required) bits.push("需Token");
+        healthText.textContent = bits.join(" · ");
+      }
+      if (healthDot) {
+        healthDot.style.background = h.use_mock
+          ? "#f59e0b"
+          : h.auth_required
+            ? "#3b82f6"
+            : "#10b981";
+      }
+    })
+    .catch(() => {
+      if (healthText) healthText.textContent = "服务离线";
+      if (healthDot) healthDot.style.background = "#f43f5e";
+    });
 }
 
 /* ===================== Dashboard ===================== */
@@ -284,7 +318,15 @@ async function initDashboard() {
       if (kpiSamples) kpiSamples.textContent = formatNumber(total);
       if (kpiModels) kpiModels.textContent = formatNumber(models.length);
       if (kpiF1) kpiF1.textContent = bestF1 ? formatPercent(bestF1) : "—";
-      if (kpiPredict) kpiPredict.textContent = formatNumber(getPredictCount());
+      // Prefer server-side predict_logs count; fall back to local demo counter.
+      let predictCount = getPredictCount();
+      try {
+        const stats = await api("/api/predict/stats");
+        if (stats && typeof stats.count === "number") predictCount = stats.count;
+      } catch (_) {
+        /* keep localStorage fallback */
+      }
+      if (kpiPredict) kpiPredict.textContent = formatNumber(predictCount);
 
       if (kpiSamplesTrend) {
         kpiSamplesTrend.textContent = total
@@ -343,8 +385,8 @@ async function initDashboard() {
               scales: {
                 x: { grid: { display: false } },
                 y: {
-                  beginAtZero: false,
-                  min: 70,
+                  beginAtZero: true,
+                  min: 0,
                   max: 100,
                   ticks: { callback: (v) => `${v}%` },
                 },
@@ -597,7 +639,7 @@ async function initDataPage() {
     fd.append("file", file);
     try {
       const res = await api("/api/data/upload", { method: "POST", body: fd });
-      showToast(res.message || "上传已接收（展示版队列）", "warning");
+      showToast(res.message || `上传成功，共 ${formatNumber(res.total_samples || 0)} 条`, "success");
       await refresh();
     } catch (err) {
       showToast(err.message || "上传失败", "error");
@@ -887,7 +929,7 @@ async function initPredictPage() {
       return;
     }
     const cards = preds.map((p) => {
-      const conf = formatPercent(p.confidence);
+      const conf = p.confidence == null ? "不适用" : formatPercent(p.confidence);
       const probaEntries = Object.entries(p.probabilities || {})
         .sort((a, b) => b[1] - a[1])
         .map(([k, v]) => `

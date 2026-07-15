@@ -21,6 +21,7 @@ from app.db import get_connection, init_db
 from app.ml.models import MODEL_ZOO, get_model_zoo
 from app.ml.train import train_all
 from app.services.dataset_service import dataset_service
+from app.services.settings_service import settings_service
 
 _ENSEMBLE = frozenset({"voting", "stacking"})
 
@@ -76,27 +77,53 @@ class TrainService:
         if unknown:
             raise ValueError(f"unknown model(s): {', '.join(unknown)}")
 
+        # Only one training job at a time (avoids joblib / metrics.json races).
+        with self._lock:
+            alive = [tid for tid, th in self._threads.items() if th.is_alive()]
+            if alive:
+                raise ValueError(
+                    f"another training task is running: {alive[0]}; wait for it to finish"
+                )
+
         df = dataset_service.get_frame()
         if df is None or len(df) == 0:
             raise ValueError("no dataset available; generate or upload data first")
 
         # Snapshot frame for the worker (avoid mid-train swaps)
         frame = df.copy()
+        if len(frame) < 40:
+            raise ValueError(
+                f"dataset too small ({len(frame)} rows); need >= 40 for stable splits"
+            )
+        class_counts = frame["label"].value_counts()
+        if int(class_counts.min()) < 3:
+            raise ValueError(
+                "each class needs at least 3 samples for stratified splits; "
+                f"distribution={class_counts.to_dict()}"
+            )
+
         summary = dataset_service.summary()
-        seed = int(summary.get("seed") or RANDOM_SEED)
-        ratios = (TRAIN_RATIO, VAL_RATIO, TEST_RATIO)
+        # Prefer dataset generation seed; else settings page; else config default.
+        cfg_seed = settings_service.get_random_seed()
+        seed = int(summary.get("seed") if summary.get("seed") is not None else cfg_seed)
+        ratios = settings_service.get_split_ratios()
 
         task_id = f"task_{uuid.uuid4().hex[:12]}"
         created = _utcnow_iso()
         config = {
             "seed": seed,
             "ratios": {"train": ratios[0], "val": ratios[1], "test": ratios[2]},
+            "settings_seed": cfg_seed,
             "dataset": {
                 "total_samples": int(len(frame)),
                 "n_per_class": summary.get("n_per_class"),
                 "seed": summary.get("seed"),
                 "source": summary.get("source"),
             },
+            "note": (
+                "val split is held out for future tuning; "
+                "reported metrics are test-set only"
+            ),
         }
 
         with get_connection() as conn:
@@ -173,14 +200,29 @@ class TrainService:
         seed: int,
         ratios: tuple[float, float, float],
     ) -> None:
+        def on_progress(progress: float, message: str) -> None:
+            # Keep status running; UI polls progress/message.
+            self._update_task(
+                task_id,
+                status="running",
+                progress=float(progress),
+                message=str(message),
+            )
+
         try:
             self._update_task(
                 task_id,
                 status="running",
-                progress=0.05,
-                message="training in progress",
+                progress=0.02,
+                message="training started",
             )
-            result = train_all(frame, model_names=names, seed=seed, ratios=ratios)
+            result = train_all(
+                frame,
+                model_names=names,
+                seed=seed,
+                ratios=ratios,
+                progress_callback=on_progress,
+            )
             metrics = result.get("metrics") or {}
             best = result.get("best_model")
             self._update_task(
@@ -238,7 +280,7 @@ class TrainService:
                     "trained_at": trained_at,
                     "task_id": task_id,
                     "is_ensemble": name in _ENSEMBLE,
-                    "path": str(path) if path.exists() else None,
+                    "path": f"models/{name}.joblib" if path.exists() else None,
                 }
             )
         # Also surface joblib files without metrics entry
@@ -256,7 +298,7 @@ class TrainService:
                         "trained_at": trained_at,
                         "task_id": task_id,
                         "is_ensemble": name in _ENSEMBLE,
-                        "path": str(path),
+                        "path": f"models/{name}.joblib",
                     }
                 )
         models.sort(key=lambda m: m.get("metrics", {}).get("f1") or 0, reverse=True)

@@ -92,7 +92,14 @@ class DatasetService:
         df.to_csv(features_path, index=False)
         meta = dict(meta)
         meta["source"] = source
-        meta["path"] = str(features_path)
+        # Store portable relative path when under project data/
+        try:
+            meta["path"] = str(features_path.relative_to(self.data_dir.parent)).replace(
+                "\\", "/"
+            )
+        except ValueError:
+            meta["path"] = features_path.name
+        meta["path_absolute"] = str(features_path)  # local-only convenience; not for publish
         meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
         self._write_active(meta)
         self._df = df.reset_index(drop=True)

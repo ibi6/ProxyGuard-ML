@@ -108,22 +108,22 @@ def predict_samples(
         if proba_maps is not None:
             proba = proba_maps[i]
             confidence = float(proba.get(label, max(proba.values()) if proba else 0.0))
+            conf_out = round(float(confidence), 4)
+            proba_support = True
         else:
-            # Soft one-hot style fallback when predict_proba unavailable
-            confidence = 0.85
-            remaining = max(0.0, 1.0 - confidence)
-            others = [l for l in LABELS if l != label]
-            share = remaining / len(others) if others else 0.0
-            proba = {l: round(share, 4) for l in others}
-            proba[label] = round(confidence, 4)
+            # Do NOT invent a fake confidence (e.g. 0.85) — that misleads demos.
+            conf_out = None
+            proba = {lab: None for lab in LABELS}
+            proba_support = False
 
         predictions.append(
             {
                 "index": i,
                 "label": label,
                 "display_label": LABEL_DISPLAY.get(label, label),
-                "confidence": round(float(confidence), 4),
+                "confidence": conf_out,
                 "probabilities": proba,
+                "proba_supported": proba_support,
                 "model": name,
             }
         )

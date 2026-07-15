@@ -16,16 +16,17 @@ from typing import Any
 from app.config import FEATURE_COLUMNS, LABELS, LABEL_DISPLAY, RANDOM_SEED
 from app.ml.data_generator import generate_synthetic_dataset
 
-# Fixed base metrics per model — ensemble slightly higher (brief: 0.82–0.97).
+# Mock metrics aligned with real synthetic experiments (n=800/class, noise=0.85).
+# Do NOT inflate toward 0.95+ — that conflicts with honest thesis numbers.
 _BASE_METRICS: dict[str, dict[str, float]] = {
-    "decision_tree": {"accuracy": 0.842, "f1": 0.831, "precision": 0.838, "recall": 0.829},
-    "svm": {"accuracy": 0.868, "f1": 0.861, "precision": 0.865, "recall": 0.858},
-    "random_forest": {"accuracy": 0.912, "f1": 0.908, "precision": 0.911, "recall": 0.906},
-    "adaboost": {"accuracy": 0.889, "f1": 0.882, "precision": 0.887, "recall": 0.879},
-    "xgboost": {"accuracy": 0.931, "f1": 0.927, "precision": 0.930, "recall": 0.925},
-    "lightgbm": {"accuracy": 0.928, "f1": 0.924, "precision": 0.927, "recall": 0.922},
-    "voting": {"accuracy": 0.951, "f1": 0.948, "precision": 0.950, "recall": 0.946},
-    "stacking": {"accuracy": 0.962, "f1": 0.959, "precision": 0.961, "recall": 0.958},
+    "decision_tree": {"accuracy": 0.600, "f1": 0.604, "precision": 0.609, "recall": 0.600},
+    "svm": {"accuracy": 0.750, "f1": 0.748, "precision": 0.747, "recall": 0.750},
+    "random_forest": {"accuracy": 0.740, "f1": 0.735, "precision": 0.734, "recall": 0.740},
+    "adaboost": {"accuracy": 0.690, "f1": 0.694, "precision": 0.700, "recall": 0.690},
+    "xgboost": {"accuracy": 0.727, "f1": 0.725, "precision": 0.723, "recall": 0.727},
+    "lightgbm": {"accuracy": 0.725, "f1": 0.723, "precision": 0.722, "recall": 0.725},
+    "voting": {"accuracy": 0.752, "f1": 0.752, "precision": 0.752, "recall": 0.752},
+    "stacking": {"accuracy": 0.746, "f1": 0.744, "precision": 0.744, "recall": 0.746},
 }
 
 _DEFAULT_MODELS = list(_BASE_METRICS.keys())
@@ -47,10 +48,10 @@ def _utcnow_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
-def _jitter(value: float, rng: random.Random, span: float = 0.012) -> float:
-    """Small per-run jitter, clamped into the realistic demo band."""
+def _jitter(value: float, rng: random.Random, span: float = 0.008) -> float:
+    """Small per-run jitter, clamped near real synthetic-experiment band."""
     v = value + rng.uniform(-span, span)
-    return round(min(0.97, max(0.82, v)), 4)
+    return round(min(0.86, max(0.55, v)), 4)
 
 
 class MockStore:

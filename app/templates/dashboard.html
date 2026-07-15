@@ -6,9 +6,9 @@
 {% block page_desc %}查看数据集规模、模型表现与近期识别活动{% endblock %}
 
 {% block topbar_actions %}
-<span class="pg-status-pill">
-  <span class="pg-status-dot"></span>
-  <span class="hide-sm">服务在线</span>
+<span class="pg-status-pill" id="pg-health-pill">
+  <span class="pg-status-dot" id="pg-health-dot"></span>
+  <span class="hide-sm" id="pg-health-text">检测中…</span>
 </span>
 <button type="button" id="btn-dash-refresh" class="pg-btn pg-btn-secondary pg-btn-sm">刷新</button>
 <a href="/data" class="pg-btn pg-btn-primary pg-btn-sm">生成数据</a>

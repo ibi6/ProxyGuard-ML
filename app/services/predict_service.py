@@ -55,13 +55,15 @@ class PredictService:
                 )
                 if k in sample or k in FEATURE_COLUMNS
             }
+            conf = pred.get("confidence")
+            conf_val = float(conf) if conf is not None else None
             rows.append(
                 (
                     created,
                     model,
                     json.dumps(summary, ensure_ascii=False, default=str),
                     pred.get("label"),
-                    float(pred.get("confidence") or 0.0),
+                    conf_val,
                     json.dumps(pred, ensure_ascii=False, default=str),
                 )
             )
@@ -104,6 +106,12 @@ class PredictService:
                     }
                 )
             return out
+
+    def count_logs(self) -> int:
+        """Total prediction rows for dashboard KPI (server-side, not localStorage)."""
+        with get_connection() as conn:
+            row = conn.execute("SELECT COUNT(*) AS c FROM predict_logs").fetchone()
+        return int(row["c"] if row is not None else 0)
 
 
 predict_service = PredictService()

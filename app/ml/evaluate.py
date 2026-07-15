@@ -386,11 +386,20 @@ def export_experiment_figures(
         "feature_importance": None,
     }
 
+    def _rel(p: Path | None) -> str | None:
+        if p is None:
+            return None
+        # Prefer repo-relative style path for portable metrics.json
+        try:
+            return f"reports/figures/{p.name}"
+        except Exception:  # noqa: BLE001
+            return p.name
+
     p_acc = save_accuracy_comparison_figure(metrics_map, out_dir=target_dir)
-    paths["model_accuracy_comparison"] = str(p_acc) if p_acc else None
+    paths["model_accuracy_comparison"] = _rel(p_acc)
 
     p_f1 = save_f1_comparison_figure(metrics_map, out_dir=target_dir)
-    paths["model_f1_comparison"] = str(p_f1) if p_f1 else None
+    paths["model_f1_comparison"] = _rel(p_f1)
 
     if best_model and best_model in cm_map:
         p_cm = try_save_confusion_figure(
@@ -399,7 +408,7 @@ def export_experiment_figures(
             str(best_model),
             out_dir=target_dir,
         )
-        paths["confusion_matrix_best"] = str(p_cm) if p_cm else None
+        paths["confusion_matrix_best"] = _rel(p_cm)
     elif best_model:
         # Still write empty-looking figure only if CM missing — skip
         paths["confusion_matrix_best"] = None
@@ -413,6 +422,6 @@ def export_experiment_figures(
         preferred_model=str(best_model) if best_model else None,
         out_dir=target_dir,
     )
-    paths["feature_importance"] = str(p_fi) if p_fi else None
+    paths["feature_importance"] = _rel(p_fi)
 
     return paths

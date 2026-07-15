@@ -36,6 +36,12 @@ CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_train_tasks_status ON train_tasks(status);
+CREATE INDEX IF NOT EXISTS idx_train_tasks_finished ON train_tasks(finished_at);
+CREATE INDEX IF NOT EXISTS idx_train_tasks_created ON train_tasks(created_at);
+CREATE INDEX IF NOT EXISTS idx_predict_logs_created ON predict_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_predict_logs_model ON predict_logs(model);
 """
 
 

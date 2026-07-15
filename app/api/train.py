@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.config import USE_MOCK
+from app.security import require_api_token
 from app.services.mock_store import store
 from app.services.train_service import train_service
 
@@ -20,7 +21,7 @@ class TrainBody(BaseModel):
     )
 
 
-@router.post("/train")
+@router.post("/train", dependencies=[Depends(require_api_token)])
 def start_train(body: TrainBody) -> dict[str, Any]:
     try:
         if USE_MOCK:

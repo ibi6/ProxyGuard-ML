@@ -11,6 +11,13 @@ DB_PATH = BASE_DIR / "app" / "proxyguard.db"
 # Data API uses real DatasetService by default; train/predict may still mock.
 USE_MOCK = os.getenv("USE_MOCK", "false").strip().lower() in {"1", "true", "yes", "on"}
 
+# Optional write-API protection. Empty = open local demo (default).
+# Set env PROXYGUARD_TOKEN=... then clients must send header X-API-Token.
+API_TOKEN = os.getenv("PROXYGUARD_TOKEN", "").strip()
+
+# Upload hard cap (bytes); also enforced in data API.
+MAX_UPLOAD_BYTES = int(os.getenv("PROXYGUARD_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
+
 RANDOM_SEED = 42
 TRAIN_RATIO = 0.70
 VAL_RATIO = 0.15

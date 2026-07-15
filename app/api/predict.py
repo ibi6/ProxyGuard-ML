@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.config import USE_MOCK
+from app.security import require_api_token
 from app.services.mock_store import store
 from app.services.predict_service import predict_service
 
@@ -19,7 +20,7 @@ class PredictBody(BaseModel):
     model: str | None = None
 
 
-@router.post("/predict")
+@router.post("/predict", dependencies=[Depends(require_api_token)])
 def predict(body: PredictBody) -> dict[str, Any]:
     if not body.samples:
         raise HTTPException(status_code=400, detail="samples must not be empty")
@@ -31,3 +32,11 @@ def predict(body: PredictBody) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except FileNotFoundError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.get("/predict/stats")
+def predict_stats() -> dict[str, Any]:
+    """Server-side prediction count for dashboard (not browser localStorage)."""
+    if USE_MOCK:
+        return {"count": 0, "source": "mock"}
+    return {"count": predict_service.count_logs(), "source": "sqlite"}

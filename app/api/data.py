@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field
 
-from app.config import RANDOM_SEED, USE_MOCK
+from app.config import MAX_UPLOAD_BYTES, RANDOM_SEED, USE_MOCK
+from app.security import require_api_token
 from app.services.dataset_service import dataset_service
 from app.services.mock_store import store
 
@@ -20,7 +21,7 @@ class GenerateBody(BaseModel):
     noise: float = Field(default=0.85, ge=0.0, le=5.0)
 
 
-@router.post("/generate")
+@router.post("/generate", dependencies=[Depends(require_api_token)])
 def generate_data(body: GenerateBody) -> dict[str, Any]:
     try:
         if USE_MOCK:
@@ -40,10 +41,19 @@ def generate_data(body: GenerateBody) -> dict[str, Any]:
     return {"status": "ok", "summary": summary, **summary}
 
 
-@router.post("/upload")
+@router.post("/upload", dependencies=[Depends(require_api_token)])
 async def upload_data(file: UploadFile = File(...)) -> dict[str, Any]:
     filename = file.filename or "upload.csv"
+    if not str(filename).lower().endswith(".csv"):
+        raise HTTPException(status_code=400, detail="only .csv uploads are allowed")
     raw = await file.read()
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"file too large (max {MAX_UPLOAD_BYTES // (1024 * 1024)}MB)",
+        )
+    if not raw:
+        raise HTTPException(status_code=400, detail="empty file")
     if USE_MOCK:
         return store.upload_stub(filename=filename)
     try:

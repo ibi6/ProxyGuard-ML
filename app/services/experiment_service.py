@@ -203,10 +203,14 @@ class ExperimentService:
             "experiments_count": experiments.get("count", 0),
             "bundle": {
                 "metrics_json": metrics_path.exists(),
-                "metrics_path": str(metrics_path) if metrics_path.exists() else None,
+                "metrics_path": "reports/metrics.json" if metrics_path.exists() else None,
                 "figures": [f["name"] for f in figures],
-                "figure_paths": [f["path"] for f in figures],
-                "zip_path": str(zip_path) if zip_path and zip_path.exists() else None,
+                "figure_paths": [f"reports/figures/{f['name']}" for f in figures],
+                "zip_path": (
+                    "reports/experiment_report.zip"
+                    if zip_path and zip_path.exists()
+                    else None
+                ),
                 "zip_placeholder": zip_placeholder,
             },
             "comparison": experiments.get("comparison") or [],

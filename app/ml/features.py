@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from app.config import FEATURE_COLUMNS  # re-export
@@ -16,6 +17,10 @@ def validate_feature_frame(df: pd.DataFrame) -> pd.DataFrame:
     out["label"] = out["label"].map(normalize_label)
     for c in FEATURE_COLUMNS:
         out[c] = pd.to_numeric(out[c], errors="coerce")
-    if out[FEATURE_COLUMNS].isna().any().any():
+    feat = out[FEATURE_COLUMNS]
+    if feat.isna().any().any():
         raise ValueError("feature columns contain non-numeric or NaN values")
+    arr = feat.to_numpy(dtype=float, copy=False)
+    if not np.isfinite(arr).all():
+        raise ValueError("feature columns contain Inf or non-finite values")
     return out.reset_index(drop=True)
