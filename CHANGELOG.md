@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker image + Compose stack
 - `pyproject.toml`, `Makefile`, `.editorconfig`, `CITATION.cff`
 - Documentation hub under `docs/README.md`
+- Full Chinese landing page `README.zh-CN.md` + `docs/README.zh-CN.md` with EN/中文 switchers
 
 ### Changed
 - README rewritten as product-grade open-source landing page

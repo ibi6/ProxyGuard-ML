@@ -10,6 +10,11 @@
 </p>
 
 <p align="center">
+  <b>English</b> ·
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/ibi6/ProxyGuard-ML/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ibi6/ProxyGuard-ML/actions/workflows/ci.yml/badge.svg" /></a>
   <a href="https://www.python.org/downloads/"><img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" /></a>
   <a href="https://fastapi.tiangolo.com/"><img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white" /></a>
@@ -341,7 +346,9 @@ CI on every push/PR to `main`:
 
 | Resource | Link |
 |----------|------|
-| Docs hub | [docs/README.md](docs/README.md) |
+| Docs hub (EN) | [docs/README.md](docs/README.md) |
+| Docs hub (中文) | [docs/README.zh-CN.md](docs/README.zh-CN.md) |
+| Chinese README | [README.zh-CN.md](README.zh-CN.md) |
 | System design | [docs/system-design.md](docs/system-design.md) |
 | Experiment guide | [docs/experiment-guide.md](docs/experiment-guide.md) |
 | Contributing | [CONTRIBUTING.md](CONTRIBUTING.md) |
