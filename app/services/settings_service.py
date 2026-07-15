@@ -10,21 +10,18 @@ from app.config import (
     RANDOM_SEED,
     TEST_RATIO,
     TRAIN_RATIO,
-    USE_MOCK,
     VAL_RATIO,
 )
 from app.db import get_connection, init_db
 
+# 只保留页面和训练真正会用到的项（不要 theme / use_mock 这种摆设字段）
 _DEFAULT_SETTINGS: dict[str, Any] = {
     "random_seed": RANDOM_SEED,
     "train_ratio": TRAIN_RATIO,
     "val_ratio": VAL_RATIO,
     "test_ratio": TEST_RATIO,
-    "default_models": ["random_forest", "xgboost", "lightgbm", "voting", "stacking"],
     "n_per_class_default": 1000,
     "noise_default": 0.85,
-    "theme": "dark",
-    "use_mock": USE_MOCK,
 }
 
 
@@ -52,10 +49,13 @@ class SettingsService:
         out = deepcopy(_DEFAULT_SETTINGS)
         with get_connection() as conn:
             for row in conn.execute("SELECT key, value FROM settings").fetchall():
+                key = row["key"]
+                if key not in _DEFAULT_SETTINGS:
+                    continue  # 忽略历史遗留的 theme / use_mock 等
                 try:
-                    out[row["key"]] = json.loads(row["value"])
+                    out[key] = json.loads(row["value"])
                 except (TypeError, json.JSONDecodeError):
-                    out[row["key"]] = row["value"]
+                    out[key] = row["value"]
         return out
 
     def update_settings(self, payload: dict[str, Any]) -> dict[str, Any]:

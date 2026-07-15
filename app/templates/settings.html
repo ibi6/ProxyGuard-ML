@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}系统设置 · ProxyGuard ML{% endblock %}
+{% block title %}设置 · ProxyGuard ML{% endblock %}
 {% block kicker %}系统{% endblock %}
 {% block page_title %}设置{% endblock %}
-{% block page_desc %}种子、划分比例等，保存后下次训练会用到{% endblock %}
+{% block page_desc %}种子、划分比例等，保存后下次训练和生成数据会用到{% endblock %}
 
 {% block topbar_actions %}
-<span class="pg-status-pill">
-  <span class="pg-status-dot"></span>
-  <span class="hide-sm">服务在线</span>
+<span class="pg-status-pill" id="pg-health-pill">
+  <span class="pg-status-dot" id="pg-health-dot"></span>
+  <span class="hide-sm" id="pg-health-text">检测中…</span>
 </span>
 <button type="submit" form="settings-form" id="btn-settings-save" class="pg-btn pg-btn-primary pg-btn-sm">保存设置</button>
 {% endblock %}
@@ -19,7 +19,7 @@
     <div class="pg-card-header">
       <div>
         <h2 class="pg-card-title">运行参数</h2>
-        <p class="pg-card-sub">保存后立即写入 Mock Store（内存），刷新页面仍可读取</p>
+        <p class="pg-card-sub">保存后写入 SQLite，刷新页面仍然有效</p>
       </div>
       <span class="pg-badge pg-badge-primary">Settings</span>
     </div>
@@ -72,13 +72,14 @@
     <div class="pg-card-header">
       <div>
         <h2 class="pg-card-title">说明</h2>
-        <p class="pg-card-sub">当前生效的配置</p>
+        <p class="pg-card-sub">这些参数怎么生效</p>
       </div>
     </div>
     <ul class="pg-list">
-      <li>seed / 划分比例 / 默认 n_per_class 会写入 <code class="pg-code">/api/settings</code>。</li>
-      <li>数据生成表单会优先读取默认 seed 与 n_per_class。</li>
-      <li>成品阶段将持久化到数据库，并驱动真实训练切分。</li>
+      <li>seed、划分比例、默认每类样本数和噪声会保存到数据库。</li>
+      <li>数据页打开时会读这里的默认 seed / 样本数 / 噪声。</li>
+      <li>点「开始训练」时会用这里的划分比例；若数据集本身带有生成时的 seed，训练优先用数据的 seed。</li>
+      <li>论文正式实验建议：每类 800、seed=42、noise=0.85、划分 0.7 / 0.15 / 0.15。</li>
     </ul>
   </div>
 </div>

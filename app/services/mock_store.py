@@ -31,11 +31,8 @@ _DEFAULT_SETTINGS: dict[str, Any] = {
     "train_ratio": 0.70,
     "val_ratio": 0.15,
     "test_ratio": 0.15,
-    "default_models": ["random_forest", "xgboost", "lightgbm", "voting", "stacking"],
     "n_per_class_default": 1000,
     "noise_default": 0.85,
-    "theme": "dark",
-    "use_mock": True,
 }
 
 
@@ -147,7 +144,7 @@ class MockStore:
 
     # ----------------------------------------------------------------- train
     def start_train(self, model_names: list[str] | None = None) -> str:
-        names = list(model_names) if model_names else list(self._settings.get("default_models") or _DEFAULT_MODELS)
+        names = list(model_names) if model_names else list(_DEFAULT_MODELS)
         if not names:
             names = ["random_forest"]
         unknown = [n for n in names if n not in _BASE_METRICS]
