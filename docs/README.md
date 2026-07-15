@@ -2,7 +2,7 @@
 
 Welcome to the ProxyGuard ML docs. Start here and drill down as needed.
 
-**Languages:** [English](README.md) · [简体中文](README.zh-CN.md) · [中文项目 README](../README.zh-CN.md)
+**Languages:** [简体中文（默认 README）](../README.md) · [English README](../README.en.md) · [中文文档中枢](README.zh-CN.md)
 
 ## Guides
 

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "proxyguard-ml"
 version = "0.2.0"
 description = "Encrypted proxy traffic recognition with ensemble learning — FastAPI console, zero payload decrypt."
-readme = "README.md"
+readme = { file = "README.en.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [

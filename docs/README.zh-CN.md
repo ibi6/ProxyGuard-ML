@@ -2,7 +2,7 @@
 
 欢迎阅读 ProxyGuard ML 文档。建议从本页进入，再按需深入。
 
-[English docs hub](README.md) · [中文项目 README](../README.zh-CN.md)
+[English docs hub](README.md) · [中文项目 README（默认）](../README.md) · [English README](../README.en.md)
 
 ## 指南一览
 
@@ -42,4 +42,4 @@
 ## 说明
 
 `system-design.md` 与 `experiment-guide.md` 正文目前以中文撰写，可直接用于学习与二次开发。  
-项目首页英文版见 [README.md](../README.md)，中文版见 [README.zh-CN.md](../README.zh-CN.md)。
+项目首页默认中文见 [README.md](../README.md)，英文版见 [README.en.md](../README.en.md)。
