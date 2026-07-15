@@ -1,41 +1,41 @@
-# Open-source maturity scorecard (v0.3.0)
+# 开源成熟度评分卡（v0.3.0）
 
-Scored against common “good public GitHub ML demo” expectations — **not** FAANG production SOC2.
+按「公开 GitHub 上像样的 ML 演示项目」标准自评，**不是**互联网大厂生产级安全产品标准。
 
-| Dimension | Score | Notes |
-|-----------|------:|-------|
-| Architecture | 16/20 | Clear layered monolith; not distributed |
-| Code quality | 15/20 | Services + tests; some USE_MOCK branching remains |
-| Security | 12/20 | Token optional, headers, upload limits; no full auth |
-| Maintainability | 15/20 | Config central, Makefile, ruff CI |
-| Documentation | 17/20 | README + architecture + schema + security |
-| OSS hygiene | 16/20 | License, CoC, templates, changelog, CI |
-| **Total** | **91/100** | **Mature demo / research OSS** |
+| 维度 | 得分 | 说明 |
+|------|-----:|------|
+| 架构设计 | 16/20 | 分层单体清晰；非分布式 |
+| 代码质量 | 15/20 | 服务分层 + 测试；仍有 USE_MOCK 分支 |
+| 安全性 | 12/20 | 可选 Token、安全头、上传限制；无完整登录 |
+| 可维护性 | 15/20 | 配置集中、Makefile、ruff CI |
+| 文档质量 | 17/20 | 中文 README + 架构 + schema + 安全说明 |
+| 开源规范 | 16/20 | License、CoC、模板、Changelog、CI |
+| **合计** | **91/100** | **成熟演示 / 研究向开源项目** |
 
-## Current grade
+## 当前等级
 
-**A− / mature open-source demo project**
+**A− · 成熟的研究 / 演示级开源项目**
 
-## Gap vs “excellent production OSS”
+## 与「优秀生产级开源」的差距
 
-| Gap | Severity |
-|-----|----------|
-| No real multi-user auth / SSO | High for SaaS, OK for research demo |
-| Synthetic data default | High for “detection product” claims |
-| In-process training thread | Medium |
-| CDN scripts (Tailwind/Chart) | Medium (CSP already documents this) |
-| No release automation / PyPI | Low |
+| 差距 | 严重度 |
+|------|--------|
+| 无多用户登录 / SSO | 对 SaaS 高，对研究演示可接受 |
+| 默认同数据 | 若宣称「检测产品」则高 |
+| 进程内训练线程 | 中 |
+| 前端依赖 CDN（Tailwind/Chart） | 中（CSP 已说明） |
+| 无自动发版 / 上 PyPI | 低 |
 
-## Must-fix (if claiming enterprise product)
+## 若宣称企业产品则必须补
 
-1. Real auth + audit  
-2. Real traffic feature pipeline  
-3. Process isolation for training  
-4. Secrets management  
+1. 真实鉴权与审计  
+2. 真实流量特征管线  
+3. 训练进程隔离  
+4. 密钥与配置管理  
 
-## Recommended next (still research-grade)
+## 仍可做的增强（研究级）
 
-1. Self-host static assets (drop CDN)  
-2. Pre-commit hooks  
-3. Coverage badge + codecov  
-4. GitHub Release workflow on tags  
+1. 静态资源本地化  
+2. pre-commit  
+3. 覆盖率徽章  
+4. 打 tag 自动 Release  

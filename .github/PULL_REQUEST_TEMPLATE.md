@@ -1,15 +1,15 @@
-## Summary
-<!-- What does this PR change and why? -->
+## 摘要
+<!-- 改了什么、为什么改 -->
 
-## Type of change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation
-- [ ] Refactor / chore
-- [ ] Tests
+## 变更类型
+- [ ] 缺陷修复
+- [ ] 新功能
+- [ ] 文档
+- [ ] 重构 / 杂项
+- [ ] 测试
 
-## Checklist
-- [ ] I ran `pytest -q` locally
-- [ ] I did not commit local data (`data/synthetic`, `models/*.joblib`, `*.db`)
-- [ ] Docs / README updated if behavior changed
-- [ ] No secrets, absolute personal paths, or student PII included
+## 检查清单
+- [ ] 本地已跑 `pytest -q`
+- [ ] 未提交本地数据（`data/synthetic`、`models/*.joblib`、`*.db`）
+- [ ] 行为变更时已更新中文文档 / README
+- [ ] 无密钥、本机绝对路径、个人隐私信息

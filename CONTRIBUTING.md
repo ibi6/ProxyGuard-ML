@@ -1,53 +1,58 @@
-# Contributing
+# 贡献指南
 
-Thanks for helping improve ProxyGuard ML.
+感谢参与 ProxyGuard ML。
 
-## Development setup
+本仓库公开文档默认使用**简体中文**。
+
+## 开发环境
 
 ```bash
 git clone https://github.com/ibi6/ProxyGuard-ML.git
 cd ProxyGuard-ML
 python -m venv .venv
-source .venv/bin/activate   # Windows: .\.venv\Scripts\Activate.ps1
+# Windows:
+.\.venv\Scripts\Activate.ps1
+# Linux/macOS:
+# source .venv/bin/activate
 pip install -r requirements-dev.txt
 pytest -q
 ```
 
-Optional lint:
+代码检查：
 
 ```bash
 ruff check app tests scripts
 ```
 
-Run the console:
+启动控制台：
 
 ```bash
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-## Project conventions
+## 约定
 
-| Area | Rule |
+| 方面 | 要求 |
 |------|------|
-| Layout | `api` thin → `services` orchestrate → `ml` pure-ish |
-| Features | Always validate with `FEATURE_COLUMNS` |
-| Reproducibility | Document seed / noise / n_per_class |
-| Honesty | Do not present mock or synthetic metrics as real PCAP results |
-| Tests | Add/adjust tests under `tests/` for behavior changes |
+| 分层 | `api` 薄适配 → `services` 编排 → `ml` 算法 |
+| 特征 | 必须用 `FEATURE_COLUMNS` 校验 |
+| 可复现 | 写明 seed / noise / n_per_class |
+| 诚实 | 禁止把 mock 或合成指标说成真实 PCAP 结果 |
+| 测试 | 行为变更请补 `tests/` |
 
-## Pull requests
+## 提交 PR
 
-1. Fork + feature branch  
-2. Keep PRs focused  
-3. `pytest -q` must pass  
-4. Fill the PR template  
+1. Fork 后开功能分支  
+2. 尽量一次只改一件事  
+3. `pytest -q` 必须通过  
+4. 填写 PR 模板  
 
-## Do not commit
+## 请勿提交
 
-- `.env`, tokens, personal absolute paths  
-- Generated `data/synthetic`, `models/*.joblib`, `*.db`  
-- Thesis personal binaries with PII  
+- `.env`、令牌、本机绝对路径  
+- 生成数据 `data/synthetic`、`models/*.joblib`、`*.db`  
+- 含个人信息的论文/答辩二进制文件  
 
-## Code of conduct
+## 行为准则
 
-See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+见 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。

@@ -1,64 +1,64 @@
-# Architecture
+# 系统架构
 
-## Overview
+## 概述
 
-ProxyGuard ML is a **monolithic FastAPI application** that combines:
+ProxyGuard ML 是一个**单体 FastAPI 应用**，包含：
 
-1. A small **ML pipeline** (synthetic/CSV features → train → evaluate → joblib)
-2. A **web console** (Jinja2 + static JS) for demos
-3. **SQLite** for train tasks, predict logs, and settings
+1. **机器学习流程**（合成/CSV 特征 → 训练 → 评估 → joblib）
+2. **Web 控制台**（Jinja2 + 静态 JS）便于演示
+3. **SQLite** 保存训练任务、预测日志与设置
 
-It is intentionally single-process and local-first. Default data is **synthetic**.
+定位为单机、本地优先。默认数据为**合成特征**。
 
-## Layers
+## 分层
 
 ```text
 ┌─────────────────────────────────────────────┐
-│ Presentation  templates/ + static/css|js    │
+│ 表现层   templates/ + static/css|js         │
 ├─────────────────────────────────────────────┤
-│ HTTP API      app/api/*  (thin adapters)    │
+│ 接口层   app/api/*   （薄适配）             │
 ├─────────────────────────────────────────────┤
-│ Services      app/services/* (orchestration)│
+│ 服务层   app/services/* （编排业务）        │
 ├─────────────────────────────────────────────┤
-│ ML core       app/ml/*   (pure-ish logic)   │
+│ ML 核心  app/ml/*    （特征/模型/训练预测） │
 ├─────────────────────────────────────────────┤
-│ Persistence   CSV/joblib/JSON + SQLite      │
+│ 持久化   CSV / joblib / JSON + SQLite       │
 └─────────────────────────────────────────────┘
 ```
 
-| Package | Responsibility |
-|---------|----------------|
-| `app/api` | Request validation, status codes, USE_MOCK switch |
-| `app/services` | Business flow, threads, DB rows |
-| `app/ml` | Feature schema, models, train/eval/predict |
-| `app/db.py` | SQLite schema + connection helper |
-| `app/security.py` | Optional API token for write routes |
-| `app/middleware.py` | Access log + security headers |
+| 目录 | 职责 |
+|------|------|
+| `app/api` | 参数校验、状态码、USE_MOCK 分支 |
+| `app/services` | 业务流程、后台线程、数据库行 |
+| `app/ml` | 特征 schema、模型、训练评估预测 |
+| `app/db.py` | SQLite 建表与连接 |
+| `app/security.py` | 写接口可选 Token |
+| `app/middleware.py` | 访问日志 + 安全响应头 |
 
-## Request flow (train)
+## 训练请求流程
 
-1. `POST /api/train` validates model names  
-2. `TrainService.start` enforces single-flight mutex  
-3. Background thread runs `train_all` with progress callbacks  
-4. Artifacts: `models/*.joblib`, `reports/metrics.json`, figures  
-5. UI polls `GET /api/train/{task_id}`  
+1. `POST /api/train` 校验模型名  
+2. `TrainService.start` 保证同时只有一个任务  
+3. 后台线程执行 `train_all`，回调进度  
+4. 产物：`models/*.joblib`、`reports/metrics.json`、图表  
+5. 前端轮询 `GET /api/train/{task_id}`  
 
-## Data contract
+## 数据约定
 
-- Features: `FEATURE_COLUMNS` (17 dims) in `app/config.py`  
-- Labels: `normal_https` | `shadowsocks` | `trojan` | `vmess`  
-- CSV upload must include `label` + all feature columns  
+- 特征：`app/config.py` 中 `FEATURE_COLUMNS`（17 维）  
+- 标签：`normal_https` | `shadowsocks` | `trojan` | `vmess`  
+- 上传 CSV 必须含 `label` 与全部特征列  
 
-## Non-goals
+## 明确不做的事
 
-- Live packet capture / PCAP parsing  
-- Multi-tenant auth / RBAC  
-- Distributed training / GPU serving  
+- 实时抓包 / PCAP 解析  
+- 多租户权限体系  
+- 分布式训练 / GPU 在线服务  
 
-## Extension points
+## 扩展点
 
-| Goal | Where to plug in |
-|------|------------------|
-| Real PCAP features | Export 17-D CSV → upload, or add extractor under `app/ml/` |
-| Auth | Expand `app/security.py` + session store |
-| Queue | Replace thread worker with Celery/RQ later |
+| 目标 | 接入位置 |
+|------|----------|
+| 真实 PCAP 特征 | 导出 17 维 CSV 上传，或在 `app/ml/` 增加提取器 |
+| 登录鉴权 | 扩展 `app/security.py` |
+| 任务队列 | 后续可用 Celery/RQ 替换线程 |

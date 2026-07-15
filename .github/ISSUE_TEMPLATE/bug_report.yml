@@ -1,46 +1,46 @@
-name: Bug report
-description: Report a problem with ProxyGuard ML
-title: "[bug] "
+name: 缺陷反馈
+description: 报告 ProxyGuard ML 的问题
+title: "[缺陷] "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report an issue. Please fill in as much detail as possible.
+        感谢反馈。请尽量写清现象与复现步骤。
   - type: textarea
     id: summary
     attributes:
-      label: Summary
-      description: What went wrong?
-      placeholder: A clear and concise description of the bug.
+      label: 问题摘要
+      description: 出了什么问题？
+      placeholder: 简要描述现象。
     validations:
       required: true
   - type: textarea
     id: repro
     attributes:
-      label: Steps to reproduce
-      description: Minimal steps to trigger the issue.
+      label: 复现步骤
+      description: 最小复现步骤
       placeholder: |
-        1. Start the server
-        2. Open /train
+        1. 启动服务
+        2. 打开 /train
         3. ...
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: Expected behavior
+      label: 期望行为
     validations:
       required: true
   - type: input
     id: env
     attributes:
-      label: Environment
+      label: 环境
       placeholder: Windows 11 / Python 3.12 / Chrome
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
-      label: Logs / screenshots
-      description: Paste relevant traceback or console output.
+      label: 日志 / 截图
+      description: 粘贴相关报错或控制台输出

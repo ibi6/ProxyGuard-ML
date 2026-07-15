@@ -1,40 +1,13 @@
-# Documentation Hub
+# 文档中心
 
-Welcome to the ProxyGuard ML docs. Start here and drill down as needed.
+本仓库文档默认使用**简体中文**。
 
-**Languages:** [简体中文（默认 README）](../README.md) · [English README](../README.en.md) · [中文文档中枢](README.zh-CN.md)
+| 文档 | 说明 |
+|------|------|
+| [系统架构](ARCHITECTURE.md) | 分层、数据流、扩展点 |
+| [系统设计](system-design.md) | 需求、模块、接口（论文第 3 章素材） |
+| [实验指南](experiment-guide.md) | 数据、模型、指标、复现步骤 |
+| [数据库脚本](schema.sql) | SQLite 建表 |
+| [开源评分卡](OPENSOURCE_SCORECARD.md) | 工程成熟度自评 |
 
-## Guides
-
-| Document | Audience | Contents |
-|----------|----------|----------|
-| [System Design](system-design.md) | Engineers writing / extending the stack | Requirements, architecture, modules, data flows, API surface |
-| [Experiment Guide](experiment-guide.md) | Researchers reproducing metrics | Dataset schema, models, metrics, Web + offline runners |
-| [../CONTRIBUTING.md](../CONTRIBUTING.md) | Contributors | Local setup, conventions, PR checklist |
-| [../SECURITY.md](../SECURITY.md) | Security researchers | Threat model, reporting channel |
-
-## Mental model
-
-```text
-Synthetic / CSV features
-        │
-        ▼
-  schema validation  ──►  train/val/test split
-        │
-        ▼
-   model zoo fit  ──►  joblib + metrics + figures
-        │
-        ▼
-   online predict  ──►  label + confidence
-```
-
-## Design principles
-
-1. **No payload decrypt** — classification is side-channel only.
-2. **Reproducibility** — fixed seeds, documented noise, offline scripts.
-3. **Honest evaluation** — synthetic data is labeled as synthetic.
-4. **Thin layers** — API adapters never own business logic; services orchestrate; `app/ml` stays pure.
-
-## Version
-
-Docs track software version **0.2.0**. See [CHANGELOG.md](../CHANGELOG.md).
+项目首页：[README.md](../README.md)

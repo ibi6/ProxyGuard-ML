@@ -1,44 +1,44 @@
-# Security Policy
+# 安全策略
 
-## Supported versions
+## 支持的版本
 
-| Version | Supported |
-|---------|-----------|
-| `main` (latest) | ✅ |
-| Older commits | ❌ Best-effort only |
+| 版本 | 是否支持 |
+|------|----------|
+| `main`（最新） | ✅ |
+| 更旧提交 | ❌ 尽力而为 |
 
-## Scope
+## 适用范围
 
-ProxyGuard ML is a **local demonstration / research** system. It is **not** hardened for multi-tenant internet exposure.
+ProxyGuard ML 是**本地演示 / 研究**系统，**未**按多租户公网暴露标准加固。
 
-Default threat model assumptions:
+默认威胁模型假设：
 
-- Single trusted local user
-- No authentication layer
-- No production secrets store
-- Synthetic or user-supplied feature CSVs only
+- 本机可信单用户  
+- 默认无登录体系（可选 Token）  
+- 无生产级密钥托管  
+- 数据为合成特征或用户上传的特征 CSV  
 
-## Reporting a vulnerability
+## 如何报告漏洞
 
-If you discover a security issue (e.g. path traversal on upload, unsafe deserialization, command injection):
+若发现安全问题（例如上传路径问题、不安全反序列化、命令注入等）：
 
-1. **Do not** open a public GitHub issue with exploit details.
-2. Email the maintainer via the contact method on the GitHub profile, or open a private security advisory on GitHub if available.
-3. Include:
-   - Affected path / version (commit SHA)
-   - Impact
-   - Minimal reproduction steps
-   - Suggested fix (optional)
+1. **不要**在公开 Issue 中贴完整利用细节  
+2. 通过 GitHub 私密安全通告或维护者主页联系方式私下告知  
+3. 请尽量包含：  
+   - 影响路径 / 版本（commit）  
+   - 影响面  
+   - 最小复现步骤  
+   - 可选修复建议  
 
-Please allow reasonable time for a fix before public disclosure.
+请给修复留出合理时间后再公开披露。
 
-## Known non-goals / residual risks
+## 已知非目标 / 残留风险
 
-- **No authn/authz** — anyone who can reach the server can train/predict
-- **joblib model load** — only load models you trust
-- **File upload** — CSV is validated for schema, but treat untrusted files carefully
-- **Local bind recommended** — default docs use `127.0.0.1`
+- **默认无完整鉴权** —— 能访问服务的人可训练/预测（可配 `PROXYGUARD_TOKEN`）  
+- **joblib 加载** —— 只加载你信任的模型文件  
+- **文件上传** —— 有 schema 与大小校验，仍需谨慎对待不可信文件  
+- **建议绑定本机** —— 文档默认 `127.0.0.1`  
 
-## Responsible use
+## 负责任使用
 
-Do not use this project for unauthorized network monitoring or interception. Classification of encrypted traffic has legal and ethical constraints depending on jurisdiction and deployment context.
+请勿将本项目用于未授权网络监控。加密流量分类在不同司法辖区有法律与伦理约束。

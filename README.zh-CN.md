@@ -1,7 +1,5 @@
-# 已迁移
+# 说明
 
-中文说明已作为仓库**默认首页**：
+本仓库 **GitHub 首页仅维护中文**。
 
-👉 **[README.md](README.md)**
-
-English version: **[README.en.md](README.en.md)**
+请打开：**[README.md](README.md)**
