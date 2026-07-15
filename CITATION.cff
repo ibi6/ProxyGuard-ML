@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "ProxyGuard ML"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - name: "ProxyGuard ML Contributors"
+repository-code: "https://github.com/ibi6/ProxyGuard-ML"
+url: "https://github.com/ibi6/ProxyGuard-ML"
+abstract: >-
+  ProxyGuard ML is an open research demo for encrypted proxy traffic
+  recognition using flow-level side-channel features and ensemble learning,
+  with a FastAPI web console. Default datasets are synthetic and reproducible.
+keywords:
+  - encrypted traffic classification
+  - ensemble learning
+  - side-channel features
+  - fastapi
+  - machine learning
+license: MIT
+version: 0.2.0
+date-released: "2026-07-15"

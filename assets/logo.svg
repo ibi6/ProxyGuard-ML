@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="ProxyGuard ML logo">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="55%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#0891B2"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#07131C"/>
+  <rect x="1.5" y="1.5" width="125" height="125" rx="26.5" fill="none" stroke="url(#g)" stroke-opacity="0.35"/>
+  <g filter="url(#glow)" transform="translate(24,18)">
+    <path d="M40 6 L78 24 V58 C78 88 60 110 40 122 C20 110 2 88 2 58 V24 Z"
+          fill="url(#g2)" opacity="0.25"/>
+    <path d="M40 6 L78 24 V58 C78 88 60 110 40 122 C20 110 2 88 2 58 V24 Z"
+          fill="none" stroke="url(#g)" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M40 28 L62 40 V62 C62 80 52 94 40 102 C28 94 18 80 18 62 V40 Z"
+          fill="rgba(34,211,238,0.12)" stroke="#67E8F9" stroke-width="2.5"/>
+    <path d="M28 66 L38 76 L54 52" fill="none" stroke="#ECFEFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

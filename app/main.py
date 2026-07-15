@@ -20,7 +20,15 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="ProxyGuard ML", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title="ProxyGuard ML",
+    version="0.2.0",
+    description=(
+        "Encrypted proxy traffic recognition with ensemble learning. "
+        "Side-channel flow features only — no payload decryption."
+    ),
+    lifespan=lifespan,
+)
 
 BASE_DIR = Path(__file__).parent
 static_dir = BASE_DIR / "static"

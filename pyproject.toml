@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "proxyguard-ml"
+version = "0.2.0"
+description = "Encrypted proxy traffic recognition with ensemble learning — FastAPI console, zero payload decrypt."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "ProxyGuard ML Contributors" },
+]
+keywords = [
+  "machine-learning",
+  "ensemble-learning",
+  "network-security",
+  "traffic-classification",
+  "fastapi",
+  "xgboost",
+  "lightgbm",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Web Environment",
+  "Framework :: FastAPI",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Education",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Security",
+]
+dependencies = [
+  "fastapi==0.115.6",
+  "uvicorn[standard]==0.32.1",
+  "jinja2==3.1.4",
+  "python-multipart==0.0.17",
+  "pandas==2.2.3",
+  "numpy==2.1.3",
+  "scikit-learn==1.5.2",
+  "xgboost==2.1.3",
+  "lightgbm==4.5.0",
+  "matplotlib==3.9.3",
+  "seaborn==0.13.2",
+  "joblib==1.4.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx==0.28.1",
+  "pytest==8.3.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/ibi6/ProxyGuard-ML"
+Repository = "https://github.com/ibi6/ProxyGuard-ML"
+Issues = "https://github.com/ibi6/ProxyGuard-ML/issues"
+Documentation = "https://github.com/ibi6/ProxyGuard-ML/blob/main/docs/README.md"
+Changelog = "https://github.com/ibi6/ProxyGuard-ML/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520" role="img" aria-label="Model leaderboard">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#050D14"/>
+      <stop offset="100%" stop-color="#0A1A24"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="best" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+    <style>
+      .t { font-family: ui-sans-serif, Segoe UI, Helvetica, Arial, sans-serif; }
+      .h { fill: #E6F7F8; font-weight: 700; }
+      .s { fill: #7FA8B5; }
+      .v { fill: #A5F3FC; font-weight: 700; }
+      .track { fill: #102734; }
+    </style>
+  </defs>
+  <rect width="1100" height="520" rx="20" fill="url(#bg)"/>
+  <text class="t h" x="40" y="42" font-size="22">Benchmark Snapshot · Macro F1 Leaderboard</text>
+  <text class="t s" x="40" y="70" font-size="14">Synthetic setting · n_per_class=800 · seed=42 · noise=0.85 · not real PCAP traffic</text>
+
+  <!-- rows: name, f1, width = f1 * 700 -->
+  <!-- decision_tree 0.6035 -->
+  <text class="t s" x="40" y="120" font-size="15">Decision Tree</text>
+  <rect class="track" x="220" y="104" width="700" height="22" rx="11"/>
+  <rect x="220" y="104" width="422" height="22" rx="11" fill="url(#bar)" opacity="0.85"/>
+  <text class="t v" x="940" y="120" font-size="15">0.604</text>
+
+  <text class="t s" x="40" y="165" font-size="15">AdaBoost</text>
+  <rect class="track" x="220" y="149" width="700" height="22" rx="11"/>
+  <rect x="220" y="149" width="486" height="22" rx="11" fill="url(#bar)" opacity="0.88"/>
+  <text class="t v" x="940" y="165" font-size="15">0.694</text>
+
+  <text class="t s" x="40" y="210" font-size="15">LightGBM</text>
+  <rect class="track" x="220" y="194" width="700" height="22" rx="11"/>
+  <rect x="220" y="194" width="506" height="22" rx="11" fill="url(#bar)" opacity="0.9"/>
+  <text class="t v" x="940" y="210" font-size="15">0.723</text>
+
+  <text class="t s" x="40" y="255" font-size="15">XGBoost</text>
+  <rect class="track" x="220" y="239" width="700" height="22" rx="11"/>
+  <rect x="220" y="239" width="507" height="22" rx="11" fill="url(#bar)" opacity="0.92"/>
+  <text class="t v" x="940" y="255" font-size="15">0.725</text>
+
+  <text class="t s" x="40" y="300" font-size="15">Random Forest</text>
+  <rect class="track" x="220" y="284" width="700" height="22" rx="11"/>
+  <rect x="220" y="284" width="515" height="22" rx="11" fill="url(#bar)" opacity="0.94"/>
+  <text class="t v" x="940" y="300" font-size="15">0.735</text>
+
+  <text class="t s" x="40" y="345" font-size="15">Stacking</text>
+  <rect class="track" x="220" y="329" width="700" height="22" rx="11"/>
+  <rect x="220" y="329" width="521" height="22" rx="11" fill="url(#bar)"/>
+  <text class="t v" x="940" y="345" font-size="15">0.744</text>
+
+  <text class="t s" x="40" y="390" font-size="15">SVM (RBF)</text>
+  <rect class="track" x="220" y="374" width="700" height="22" rx="11"/>
+  <rect x="220" y="374" width="523" height="22" rx="11" fill="url(#bar)"/>
+  <text class="t v" x="940" y="390" font-size="15">0.748</text>
+
+  <text class="t h" x="40" y="435" font-size="15">Soft Voting ★</text>
+  <rect class="track" x="220" y="419" width="700" height="22" rx="11"/>
+  <rect x="220" y="419" width="526" height="22" rx="11" fill="url(#best)"/>
+  <text class="t v" x="940" y="435" font-size="15">0.752</text>
+
+  <text class="t s" x="40" y="490" font-size="13">Noise ablation (n=500/class): F1 ≈ 0.86 @ noise=0.55 → ≈ 0.74 @ noise=0.85 — ensembles remain competitive as difficulty rises.</text>
+</svg>
