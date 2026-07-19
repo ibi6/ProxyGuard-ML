@@ -6,6 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.schemas import SettingsUpdateRequest
 from app.config import USE_MOCK
 from app.security import require_api_token
 from app.services.mock_store import store
@@ -22,10 +23,11 @@ def get_settings() -> dict[str, Any]:
 
 
 @router.put("/settings", dependencies=[Depends(require_api_token)])
-def update_settings(payload: dict[str, Any]) -> dict[str, Any]:
+def update_settings(payload: SettingsUpdateRequest) -> dict[str, Any]:
+    values = payload.model_dump(exclude_none=True)
     try:
         if USE_MOCK:
-            return store.update_settings(payload)
-        return settings_service.update_settings(payload)
+            return store.update_settings(values)
+        return settings_service.update_settings(values)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

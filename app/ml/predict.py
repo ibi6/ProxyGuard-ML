@@ -63,6 +63,8 @@ def _samples_to_frame(samples: list[dict[str, Any]]) -> pd.DataFrame:
                 row[col] = float(sample[col])
             except (TypeError, ValueError) as exc:
                 raise ValueError(f"sample[{i}].{col} is not numeric") from exc
+        if not np.isfinite(np.fromiter(row.values(), dtype=float)).all():
+            raise ValueError(f"sample[{i}] contains NaN, Inf, or non-finite values")
         rows.append(row)
     return pd.DataFrame(rows, columns=list(FEATURE_COLUMNS))
 

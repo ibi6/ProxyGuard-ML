@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
 
+from app.api.schemas import TrainRequest
 from app.config import USE_MOCK
 from app.security import require_api_token
 from app.services.mock_store import store
@@ -15,14 +15,11 @@ from app.services.train_service import train_service
 router = APIRouter(prefix="/api", tags=["train"])
 
 
-class TrainBody(BaseModel):
-    models: list[str] = Field(
-        default_factory=lambda: ["random_forest", "xgboost", "voting"]
-    )
+TrainBody = TrainRequest
 
 
 @router.post("/train", dependencies=[Depends(require_api_token)])
-def start_train(body: TrainBody) -> dict[str, Any]:
+def start_train(body: TrainRequest) -> dict[str, Any]:
     try:
         if USE_MOCK:
             task_id = store.start_train(body.models)

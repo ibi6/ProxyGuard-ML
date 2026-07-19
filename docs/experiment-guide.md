@@ -43,7 +43,7 @@
   - `data/synthetic/features.csv`  
   - `data/synthetic/meta.json`  
 - **生成参数**（Web API 与脚本一致思想）：  
-  - `n_per_class`：每类样本数（演示建议 1000；冒烟可用 200）  
+  - `n_per_class`：每类样本数（正式实验建议 800；冒烟可用 200）
   - `seed`：随机种子（默认 42）  
   - `noise`：噪声尺度（默认 0.85，可调）  
 - **类别数**：4（见下表）  
@@ -183,10 +183,10 @@ cd ProxyGuard-ML
 .\.venv\Scripts\Activate.ps1
 
 # 正式规模示例
-python scripts/run_experiments.py --n-per-class 1000 --seed 42 --noise 0.15
+python scripts/run_experiments.py --n-per-class 800 --seed 42 --noise 0.85
 
 # 指定模型子集
-python scripts/run_experiments.py --n-per-class 1000 --seed 42 --models decision_tree,svm,random_forest,adaboost,xgboost,lightgbm,voting,stacking
+python scripts/run_experiments.py --n-per-class 800 --seed 42 --noise 0.85 --models decision_tree,svm,random_forest,adaboost,xgboost,lightgbm,voting,stacking
 ```
 
 脚本行为：

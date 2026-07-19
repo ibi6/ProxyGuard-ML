@@ -31,7 +31,7 @@ _DEFAULT_SETTINGS: dict[str, Any] = {
     "train_ratio": 0.70,
     "val_ratio": 0.15,
     "test_ratio": 0.15,
-    "n_per_class_default": 1000,
+    "n_per_class_default": 800,
     "noise_default": 0.85,
 }
 
@@ -103,7 +103,7 @@ class MockStore:
 
     def generate(
         self,
-        n_per_class: int = 1000,
+        n_per_class: int = 800,
         seed: int = RANDOM_SEED,
         noise: float = 0.85,
     ) -> dict[str, Any]:

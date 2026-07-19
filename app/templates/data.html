@@ -6,9 +6,9 @@
 {% block page_desc %}生成合成数据，或上传带 label 的 CSV{% endblock %}
 
 {% block topbar_actions %}
-<span class="pg-status-pill">
-  <span class="pg-status-dot"></span>
-  <span class="hide-sm">服务在线</span>
+<span class="pg-status-pill js-health-pill" role="status">
+  <span class="pg-status-dot js-health-dot"></span>
+  <span class="hide-sm js-health-text">检测中…</span>
 </span>
 <span id="data-summary-badge" class="pg-badge pg-badge-neutral">加载中</span>
 {% endblock %}
@@ -22,7 +22,7 @@
           <h2 class="pg-card-title">生成合成数据</h2>
           <p class="pg-card-sub">四类均衡 · 17 维流级特征（合成数据，非抓包）</p>
         </div>
-        <span class="pg-badge pg-badge-primary">Generate</span>
+        <span class="pg-badge pg-badge-primary">合成</span>
       </div>
       <div class="pg-hint ok" style="margin-bottom:0.85rem;">
         论文正式实验建议：每类 <strong>800</strong> · seed=<strong>42</strong> · noise=<strong>0.85</strong>
@@ -58,15 +58,15 @@
           <h2 class="pg-card-title">上传 CSV</h2>
           <p class="pg-card-sub">CSV 需包含 17 个特征列和 label</p>
         </div>
-        <span class="pg-badge pg-badge-info">Upload</span>
+        <span class="pg-badge pg-badge-info">CSV</span>
       </div>
-      <div class="pg-upload-zone">
-        <input type="file" id="data-upload" accept=".csv,text/csv" />
+      <label class="pg-upload-zone" for="data-upload">
+        <input type="file" id="data-upload" accept=".csv,text/csv" aria-describedby="data-upload-help" />
         <div class="pg-upload-copy">
           <strong>点击选择 CSV 文件</strong>
-          <p class="pg-muted">列名需与系统 FEATURE_COLUMNS 一致，并含 label。最大约 20MB。</p>
+          <p class="pg-muted" id="data-upload-help">列名需与系统 FEATURE_COLUMNS 一致，并含 label。最大约 20MB。</p>
         </div>
-      </div>
+      </label>
       <p class="pg-dim" style="margin:0.85rem 0 0;font-size:0.8rem;">
         标签集合：Normal HTTPS · Shadowsocks · Trojan · VMess
       </p>

@@ -1,13 +1,13 @@
 -- ProxyGuard ML — SQLite schema (task / log / settings only)
 -- This is an experiment-console store, not a multi-tenant enterprise IPAM schema.
 -- Apply via app.db.init_db() at process start, or:
---   sqlite3 app/proxyguard.db < docs/schema.sql
+--   sqlite3 data/proxyguard.db < docs/schema.sql
 
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS train_tasks (
     task_id     TEXT PRIMARY KEY,
-    status      TEXT NOT NULL,          -- running | success | failed
+    status      TEXT NOT NULL,          -- running | success | failed | cancelled
     models      TEXT,                  -- JSON list
     config      TEXT,                  -- JSON object (seed, ratios, dataset meta)
     progress    REAL DEFAULT 0,

@@ -6,9 +6,9 @@
 {% block page_desc %}看各模型指标，导出报告压缩包{% endblock %}
 
 {% block topbar_actions %}
-<span class="pg-status-pill">
-  <span class="pg-status-dot"></span>
-  <span class="hide-sm">服务在线</span>
+<span class="pg-status-pill js-health-pill" role="status">
+  <span class="pg-status-dot js-health-dot"></span>
+  <span class="hide-sm js-health-text">检测中…</span>
 </span>
 <button type="button" id="btn-export-report" class="pg-btn pg-btn-primary pg-btn-sm">导出 JSON 报告</button>
 {% endblock %}
@@ -24,7 +24,7 @@
           <h2 class="pg-card-title">模型对比表</h2>
           <p class="pg-card-sub">Accuracy · Precision · Recall · F1</p>
         </div>
-        <span class="pg-badge pg-badge-success">Comparison</span>
+        <span class="pg-badge pg-badge-success">对比</span>
       </div>
       <div id="exp-table-body"></div>
     </div>

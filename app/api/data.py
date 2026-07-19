@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from pydantic import BaseModel, Field
 
-from app.config import MAX_UPLOAD_BYTES, RANDOM_SEED, USE_MOCK
+from app.api.schemas import GenerateRequest
+from app.config import MAX_UPLOAD_BYTES, USE_MOCK
 from app.security import require_api_token
 from app.services.dataset_service import dataset_service
 from app.services.mock_store import store
@@ -15,14 +15,34 @@ from app.services.mock_store import store
 router = APIRouter(prefix="/api/data", tags=["data"])
 
 
-class GenerateBody(BaseModel):
-    n_per_class: int = Field(default=1000, ge=1, le=50000)
-    seed: int = Field(default=RANDOM_SEED)
-    noise: float = Field(default=0.85, ge=0.0, le=5.0)
+GenerateBody = GenerateRequest
+
+
+async def _read_upload_limited(
+    file: UploadFile,
+    *,
+    max_bytes: int,
+    chunk_bytes: int = 1024 * 1024,
+) -> bytes:
+    """Read an upload incrementally and stop as soon as the cap is exceeded."""
+    if max_bytes < 1 or chunk_bytes < 1:
+        raise ValueError("upload size limits must be positive")
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        remaining_probe = min(chunk_bytes, max_bytes - total + 1)
+        chunk = await file.read(remaining_probe)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > max_bytes:
+            raise ValueError(f"file too large (max {max_bytes // (1024 * 1024)}MB)")
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 
 @router.post("/generate", dependencies=[Depends(require_api_token)])
-def generate_data(body: GenerateBody) -> dict[str, Any]:
+def generate_data(body: GenerateRequest) -> dict[str, Any]:
     try:
         if USE_MOCK:
             summary = store.generate(
@@ -46,12 +66,13 @@ async def upload_data(file: UploadFile = File(...)) -> dict[str, Any]:
     filename = file.filename or "upload.csv"
     if not str(filename).lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="only .csv uploads are allowed")
-    raw = await file.read()
-    if len(raw) > MAX_UPLOAD_BYTES:
+    try:
+        raw = await _read_upload_limited(file, max_bytes=MAX_UPLOAD_BYTES)
+    except ValueError as exc:
         raise HTTPException(
             status_code=413,
-            detail=f"file too large (max {MAX_UPLOAD_BYTES // (1024 * 1024)}MB)",
-        )
+            detail=str(exc),
+        ) from exc
     if not raw:
         raise HTTPException(status_code=400, detail="empty file")
     if USE_MOCK:

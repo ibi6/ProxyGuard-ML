@@ -20,7 +20,7 @@ _DEFAULT_SETTINGS: dict[str, Any] = {
     "train_ratio": TRAIN_RATIO,
     "val_ratio": VAL_RATIO,
     "test_ratio": TEST_RATIO,
-    "n_per_class_default": 1000,
+    "n_per_class_default": 800,
     "noise_default": 0.85,
 }
 
@@ -105,7 +105,7 @@ class SettingsService:
                 f"train/val/test ratios must sum to 1.0 (got {total:.4f})"
             )
         try:
-            n_per = int(cfg.get("n_per_class_default", 1000))
+            n_per = int(cfg.get("n_per_class_default", 800))
             noise = float(cfg.get("noise_default", 0.85))
         except (TypeError, ValueError) as exc:
             raise ValueError("n_per_class_default/noise_default invalid") from exc

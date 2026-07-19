@@ -6,9 +6,9 @@
 {% block page_desc %}勾选模型后后台训练，页面会刷新进度{% endblock %}
 
 {% block topbar_actions %}
-<span class="pg-status-pill" id="pg-health-pill">
-  <span class="pg-status-dot" id="pg-health-dot"></span>
-  <span class="hide-sm" id="pg-health-text">检测中…</span>
+<span class="pg-status-pill js-health-pill" id="pg-health-pill" role="status">
+  <span class="pg-status-dot js-health-dot" id="pg-health-dot"></span>
+  <span class="hide-sm js-health-text" id="pg-health-text">检测中…</span>
 </span>
 <button type="button" id="btn-select-defaults" class="pg-btn pg-btn-ghost pg-btn-sm">答辩推荐</button>
 <button type="button" id="btn-select-all" class="pg-btn pg-btn-secondary pg-btn-sm">全选</button>

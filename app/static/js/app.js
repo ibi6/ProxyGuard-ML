@@ -31,21 +31,21 @@ const MODEL_CATALOG = [
 ];
 
 const CHART_COLORS = {
-  indigo: "#2563eb",
-  cyan: "#0ea5e9",
-  emerald: "#059669",
+  indigo: "#0f8f83",
+  cyan: "#20b8bb",
+  emerald: "#13865f",
   amber: "#d97706",
-  rose: "#dc2626",
-  blue: "#3b82f6",
-  violet: "#1d4ed8",
-  slate: "#94a3b8",
+  rose: "#cf3f4d",
+  blue: "#0e7490",
+  violet: "#155e75",
+  slate: "#82969e",
 };
 
 const CLASS_COLORS = {
-  normal_https: "#3b82f6",
-  shadowsocks: "#2563eb",
+  normal_https: "#0e7490",
+  shadowsocks: "#0f8f83",
   trojan: "#f59e0b",
-  vmess: "#10b981",
+  vmess: "#13865f",
 };
 
 const FEATURE_DEFAULTS = {
@@ -80,6 +80,7 @@ const PREDICT_KEY_FIELDS = [
 ];
 
 const PREDICT_COUNT_KEY = "pg_predict_count";
+const MAX_PREDICT_BATCH = 500;
 
 let _charts = {};
 
@@ -125,6 +126,7 @@ function showToast(msg, type = "info") {
 
   const el = document.createElement("div");
   el.className = `pg-toast ${type}`;
+  el.setAttribute("role", type === "error" ? "alert" : "status");
   el.innerHTML = `
     <span class="pg-toast-dot" aria-hidden="true"></span>
     <p class="pg-toast-msg"></p>
@@ -224,9 +226,174 @@ function destroyChart(key) {
 
 function chartDefaults() {
   if (typeof Chart === "undefined") return;
-  Chart.defaults.color = "#64748b";
-  Chart.defaults.borderColor = "rgba(148,163,184,0.22)";
+  const palette = themePalette();
+  Chart.defaults.color = palette.textMuted;
+  Chart.defaults.borderColor = palette.grid;
   Chart.defaults.font.family = "Segoe UI, PingFang SC, Microsoft YaHei, system-ui, sans-serif";
+  Chart.defaults.plugins.tooltip.backgroundColor = palette.tooltip;
+  Chart.defaults.plugins.tooltip.titleColor = palette.text;
+  Chart.defaults.plugins.tooltip.bodyColor = palette.textMuted;
+  Chart.defaults.plugins.tooltip.borderColor = palette.border;
+  Chart.defaults.plugins.tooltip.borderWidth = 1;
+}
+
+function cssVariable(name, fallback) {
+  const value = window.getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
+function themePalette() {
+  return {
+    text: cssVariable("--pg-text", "#102631"),
+    textMuted: cssVariable("--pg-text-muted", "#56707a"),
+    grid: cssVariable("--pg-chart-grid", "rgba(99,124,132,0.2)"),
+    border: cssVariable("--pg-border", "rgba(99,124,132,0.22)"),
+    surface: cssVariable("--pg-surface-solid", "#ffffff"),
+    tooltip: cssVariable("--pg-chart-tooltip", "#102631"),
+  };
+}
+
+function refreshChartTheme() {
+  if (typeof Chart === "undefined") return;
+  chartDefaults();
+  const palette = themePalette();
+  Object.entries(_charts).forEach(([key, chart]) => {
+    if (!chart) return;
+    chart.options.color = palette.textMuted;
+    if (chart.options.plugins?.legend?.labels) {
+      chart.options.plugins.legend.labels.color = palette.textMuted;
+    }
+    Object.values(chart.options.scales || {}).forEach((scale) => {
+      scale.ticks = { ...(scale.ticks || {}), color: palette.textMuted };
+      if (scale.grid?.display !== false) {
+        scale.grid = { ...(scale.grid || {}), color: palette.grid };
+      }
+    });
+    if (key === "data-dist" && chart.data.datasets?.[0]) {
+      chart.data.datasets[0].borderColor = palette.surface;
+    }
+    chart.update("none");
+  });
+}
+
+function initThemeControl() {
+  const toggle = document.getElementById("pg-theme-toggle");
+  const menu = document.getElementById("pg-theme-menu");
+  const options = Array.from(menu?.querySelectorAll("[data-theme-option]") || []);
+  if (!toggle || !menu || !options.length) return;
+
+  const labels = {
+    system: "跟随系统",
+    light: "浅色模式",
+    dark: "深色模式",
+  };
+
+  function currentPreference() {
+    return window.pgTheme?.getPreference()
+      || document.documentElement.dataset.themePreference
+      || "system";
+  }
+
+  function syncThemeControl() {
+    const preference = currentPreference();
+    toggle.dataset.preference = preference;
+    toggle.setAttribute("aria-label", `选择主题，当前${labels[preference] || labels.system}`);
+    options.forEach((option) => {
+      const selected = option.dataset.themeOption === preference;
+      option.setAttribute("aria-checked", String(selected));
+      option.tabIndex = selected ? 0 : -1;
+    });
+  }
+
+  function positionMenu() {
+    if (menu.classList.contains("pg-hidden")) return;
+    const rect = toggle.getBoundingClientRect();
+    const gutter = 10;
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
+    const left = Math.min(
+      Math.max(gutter, rect.right - menuWidth),
+      window.innerWidth - menuWidth - gutter
+    );
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const top = spaceBelow >= menuHeight + gutter
+      ? rect.bottom + 8
+      : Math.max(gutter, rect.top - menuHeight - 8);
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+  }
+
+  function setMenuOpen(open, focusSelected = false) {
+    menu.classList.toggle("pg-hidden", !open);
+    toggle.setAttribute("aria-expanded", String(open));
+    if (open) {
+      syncThemeControl();
+      positionMenu();
+      if (focusSelected) {
+        options.find((option) => option.getAttribute("aria-checked") === "true")?.focus();
+      }
+    }
+  }
+
+  toggle.addEventListener("click", () => {
+    setMenuOpen(menu.classList.contains("pg-hidden"), false);
+  });
+  toggle.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setMenuOpen(true, true);
+    }
+  });
+
+  options.forEach((option) => {
+    option.addEventListener("click", () => {
+      window.pgTheme?.setPreference(option.dataset.themeOption);
+      syncThemeControl();
+      setMenuOpen(false);
+      toggle.focus();
+    });
+  });
+
+  menu.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setMenuOpen(false);
+      toggle.focus();
+      return;
+    }
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const current = Math.max(0, options.indexOf(document.activeElement));
+    let next = current;
+    if (event.key === "ArrowDown") next = (current + 1) % options.length;
+    if (event.key === "ArrowUp") next = (current - 1 + options.length) % options.length;
+    if (event.key === "Home") next = 0;
+    if (event.key === "End") next = options.length - 1;
+    options[next].focus();
+  });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!menu.classList.contains("pg-hidden")
+      && !menu.contains(event.target)
+      && !toggle.contains(event.target)) {
+      setMenuOpen(false);
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !menu.classList.contains("pg-hidden")) {
+      event.preventDefault();
+      setMenuOpen(false);
+      toggle.focus();
+    }
+  });
+  window.addEventListener("resize", positionMenu);
+  window.addEventListener("scroll", positionMenu, true);
+  window.addEventListener("pg:themechange", () => {
+    syncThemeControl();
+    refreshChartTheme();
+  });
+
+  syncThemeControl();
 }
 
 function emptyHtml(iconPath, title, desc, actionHtml = "") {
@@ -243,49 +410,85 @@ function emptyHtml(iconPath, title, desc, actionHtml = "") {
 }
 
 function initShell() {
+  initThemeControl();
   const sidebar = document.getElementById("pg-sidebar");
   const overlay = document.getElementById("pg-overlay");
   const toggle = document.getElementById("pg-mobile-toggle");
+  const mobileNavMedia = window.matchMedia("(max-width: 960px)");
 
-  function closeSidebar() {
-    sidebar?.classList.remove("open");
-    overlay?.classList.remove("open");
+  function syncSidebarAccessibility(open) {
+    const hidden = mobileNavMedia.matches && !open;
+    sidebar?.toggleAttribute("inert", hidden);
+    sidebar?.setAttribute("aria-hidden", String(hidden));
   }
 
-  function openSidebar() {
-    sidebar?.classList.add("open");
-    overlay?.classList.add("open");
+  function setSidebar(open) {
+    sidebar?.classList.toggle("open", open);
+    overlay?.classList.toggle("open", open);
+    overlay?.setAttribute("aria-hidden", String(!open));
+    toggle?.setAttribute("aria-expanded", String(open));
+    toggle?.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
+    document.body.classList.toggle("pg-nav-open", open);
+    syncSidebarAccessibility(open);
   }
 
   toggle?.addEventListener("click", () => {
-    if (sidebar?.classList.contains("open")) closeSidebar();
-    else openSidebar();
+    setSidebar(!sidebar?.classList.contains("open"));
   });
-  overlay?.addEventListener("click", closeSidebar);
+  overlay?.addEventListener("click", () => setSidebar(false));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && sidebar?.classList.contains("open")) {
+      setSidebar(false);
+      toggle?.focus();
+    }
+  });
+  mobileNavMedia.addEventListener("change", () => {
+    setSidebar(false);
+  });
+  syncSidebarAccessibility(false);
 
-  // Real health probe (template no longer hardcodes "online")
-  const healthText = document.getElementById("pg-health-text");
-  const healthDot = document.getElementById("pg-health-dot");
+  // One real health probe updates the consistent status component on every page.
+  const healthPills = Array.from(document.querySelectorAll(".js-health-pill"));
   api("/api/health")
     .then((h) => {
-      if (healthText) {
+      healthPills.forEach((pill) => {
+        const healthText = pill.querySelector(".js-health-text");
+        const healthDot = pill.querySelector(".js-health-dot");
         const bits = ["服务在线"];
         if (h.use_mock) bits.push("MOCK");
         if (h.auth_required) bits.push("需Token");
-        healthText.textContent = bits.join(" · ");
-      }
-      if (healthDot) {
-        healthDot.style.background = h.use_mock
+        if (healthText) healthText.textContent = bits.join(" · ");
+        if (healthDot) healthDot.style.background = h.use_mock
           ? "#f59e0b"
           : h.auth_required
-            ? "#3b82f6"
-            : "#10b981";
-      }
+            ? "#0e7490"
+            : "#1cad7b";
+        pill.dataset.state = h.use_mock ? "warning" : "online";
+        pill.setAttribute("aria-label", bits.join("，"));
+      });
     })
     .catch(() => {
-      if (healthText) healthText.textContent = "服务离线";
-      if (healthDot) healthDot.style.background = "#f43f5e";
+      healthPills.forEach((pill) => {
+        const healthText = pill.querySelector(".js-health-text");
+        const healthDot = pill.querySelector(".js-health-dot");
+        if (healthText) healthText.textContent = "服务离线";
+        if (healthDot) healthDot.style.background = "#dc3545";
+        pill.dataset.state = "offline";
+        pill.setAttribute("aria-label", "服务离线");
+      });
     });
+}
+
+async function waitUntilDocumentVisible() {
+  if (!document.hidden) return;
+  await new Promise((resolve) => {
+    const onVisibility = () => {
+      if (document.hidden) return;
+      document.removeEventListener("visibilitychange", onVisibility);
+      resolve();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+  });
 }
 
 /* ===================== Dashboard ===================== */
@@ -348,8 +551,20 @@ async function initDashboard() {
 
       // Accuracy bar chart
       if (models.length && chartWrap) {
-        chartEmpty?.classList.add("pg-hidden");
-        chartWrap.classList.remove("pg-hidden");
+        if (typeof Chart === "undefined") {
+          chartWrap.classList.add("pg-hidden");
+          if (chartEmpty) {
+            chartEmpty.classList.remove("pg-hidden");
+            chartEmpty.innerHTML = emptyHtml(
+              '<path d="M4 19V5"/><path d="M4 19h16"/>',
+              "图表组件未加载",
+              "模型指标仍可在训练和实验页面查看，请检查网络后刷新。"
+            );
+          }
+        } else {
+          chartEmpty?.classList.add("pg-hidden");
+          chartWrap.classList.remove("pg-hidden");
+        }
         const canvas = document.getElementById("dash-acc-chart");
         if (canvas && typeof Chart !== "undefined") {
           destroyChart("dash-acc");
@@ -361,7 +576,7 @@ async function initDashboard() {
                 label: "Accuracy",
                 data: models.map((m) => Number(((m.metrics?.accuracy || 0) * 100).toFixed(2))),
                 backgroundColor: models.map((m) =>
-                  m.is_ensemble ? "rgba(5,150,105,0.72)" : "rgba(37,99,235,0.72)"
+                  m.is_ensemble ? "rgba(19,134,95,0.72)" : "rgba(15,143,131,0.72)"
                 ),
                 borderColor: models.map((m) =>
                   m.is_ensemble ? CHART_COLORS.emerald : CHART_COLORS.blue
@@ -449,7 +664,7 @@ async function initDashboard() {
                 <td>${escapeHtml((t.models || []).map(modelShort).join(" · ") || "—")}</td>
                 <td>${escapeHtml(best)}</td>
                 <td>${escapeHtml(f1)}</td>
-                <td class="pg-dim">${escapeHtml((t.finished_at || t.created_at || "").replace("T", " ").replace("+00:00", " UTC"))}</td>
+                <td class="pg-dim pg-nowrap">${escapeHtml((t.finished_at || t.created_at || "").replace("T", " ").replace("+00:00", " UTC"))}</td>
               </tr>
             `;
           }).join("");
@@ -550,8 +765,20 @@ async function initDataPage() {
 
       const dist = summary.class_distribution || {};
       if (total) {
-        chartEmpty?.classList.add("pg-hidden");
-        chartWrap?.classList.remove("pg-hidden");
+        if (typeof Chart === "undefined") {
+          chartWrap?.classList.add("pg-hidden");
+          if (chartEmpty) {
+            chartEmpty.classList.remove("pg-hidden");
+            chartEmpty.innerHTML = emptyHtml(
+              '<circle cx="12" cy="12" r="8"/>',
+              "图表组件未加载",
+              "类别数据已就绪，请检查网络后刷新图表。"
+            );
+          }
+        } else {
+          chartEmpty?.classList.add("pg-hidden");
+          chartWrap?.classList.remove("pg-hidden");
+        }
         const canvas = document.getElementById("data-dist-chart");
         if (canvas && typeof Chart !== "undefined") {
           destroyChart("data-dist");
@@ -564,7 +791,7 @@ async function initDataPage() {
               datasets: [{
                 data: values,
                 backgroundColor: LABEL_ORDER.map((l) => CLASS_COLORS[l]),
-                borderColor: "#ffffff",
+                borderColor: themePalette().surface,
                 borderWidth: 2,
                 hoverOffset: 6,
               }],
@@ -695,7 +922,7 @@ async function initTrainPage() {
           <span class="pg-check-card-title">${escapeHtml(m.label)}</span>
           <span class="pg-check-card-sub">${m.ensemble ? "集成" : "基学习器"}${slow ? " · 可能较慢" : ""}</span>
         </span>
-        ${m.ensemble ? '<span class="pg-badge pg-badge-info">Ensemble</span>' : '<span class="pg-badge pg-badge-neutral">Base</span>'}
+        ${m.ensemble ? '<span class="pg-badge pg-badge-info">集成</span>' : '<span class="pg-badge pg-badge-neutral">基模型</span>'}
       </label>`;
     }).join("");
   }
@@ -796,7 +1023,7 @@ async function initTrainPage() {
               </div>
             </div>
             <div class="pg-mt-4" style="height:8px;background:rgba(148,163,184,0.2);border-radius:999px;overflow:hidden;">
-              <div style="height:100%;width:${Math.max(2, Math.min(100, (progressVal || 0) * 100))}%;background:linear-gradient(90deg,#2563eb,#0ea5e9);transition:width .3s ease;"></div>
+              <div style="height:100%;width:${Math.max(2, Math.min(100, (progressVal || 0) * 100))}%;background:linear-gradient(90deg,#0f8f83,#20b8bb);transition:width .3s ease;"></div>
             </div>
             <p class="pg-dim" style="margin:0.9rem 0 0;font-size:0.8rem;">
               ${escapeHtml(latest.message || latest.error || "")}
@@ -857,6 +1084,7 @@ async function initTrainPage() {
   async function pollTrainTask(taskId, { intervalMs = 1200, timeoutMs = 600000 } = {}) {
     const started = Date.now();
     while (Date.now() - started < timeoutMs) {
+      await waitUntilDocumentVisible();
       const task = await api(`/api/train/${taskId}`);
       await renderTasks();
       if (["success", "failed", "cancelled"].includes(task.status)) {
@@ -952,7 +1180,7 @@ async function initPredictPage() {
     fieldsWrap.innerHTML = PREDICT_KEY_FIELDS.map((f) => `
       <div class="pg-field">
         <label class="pg-label" for="pf-${f.key}">${escapeHtml(f.label)}</label>
-        <input class="pg-input" id="pf-${f.key}" name="${f.key}" type="number" step="${f.step}" value="${FEATURE_DEFAULTS[f.key]}" />
+        <input class="pg-input" id="pf-${f.key}" name="${f.key}" type="number" step="${f.step}" value="${FEATURE_DEFAULTS[f.key]}" inputmode="decimal" required />
       </div>
     `).join("");
   }
@@ -979,7 +1207,7 @@ async function initPredictPage() {
         warnBox.innerHTML = `
           <strong>尚未完成训练。</strong>
           请先到
-          <a href="/train" style="color:#2563eb;text-decoration:underline;font-weight:600;">模型训练</a>
+          <a href="/train" style="color:#08746c;text-decoration:underline;font-weight:600;">模型训练</a>
           页完成至少一次训练，再进行真实模型推理。
         `;
       } else {
@@ -999,6 +1227,25 @@ async function initPredictPage() {
     return sample;
   }
 
+  function normalizeSample(sample, index) {
+    if (!sample || typeof sample !== "object" || Array.isArray(sample)) {
+      throw new Error(`第 ${index + 1} 条样本必须是对象`);
+    }
+    const row = { ...FEATURE_DEFAULTS, ...sample };
+    FEATURE_COLUMNS.forEach((column) => {
+      const rawValue = row[column];
+      if (rawValue === null || typeof rawValue === "boolean") {
+        throw new Error(`第 ${index + 1} 条的 ${column} 必须是数值`);
+      }
+      const value = Number(rawValue);
+      if (!Number.isFinite(value)) {
+        throw new Error(`第 ${index + 1} 条的 ${column} 必须是有限数值`);
+      }
+      row[column] = value;
+    });
+    return row;
+  }
+
   function renderPredictions(payload) {
     const preds = payload.predictions || [];
     if (!resultBody) return;
@@ -1012,15 +1259,20 @@ async function initPredictPage() {
     }
     const cards = preds.map((p) => {
       const conf = p.confidence == null ? "不适用" : formatPercent(p.confidence);
-      const probaEntries = Object.entries(p.probabilities || {})
+      const probabilityPairs = Object.entries(p.probabilities || {})
+        .filter(([, value]) => Number.isFinite(Number(value)));
+      const probaEntries = probabilityPairs
         .sort((a, b) => b[1] - a[1])
-        .map(([k, v]) => `
+        .map(([k, rawValue]) => {
+          const v = Math.max(0, Math.min(1, Number(rawValue)));
+          return `
           <div class="pg-proba-row">
             <span>${escapeHtml(LABEL_DISPLAY[k] || k)}</span>
-            <div class="pg-proba-bar"><span style="width:${Math.max(4, (v || 0) * 100)}%"></span></div>
+            <div class="pg-proba-bar"><span style="width:${v * 100}%"></span></div>
             <span class="pg-dim">${formatPercent(v)}</span>
           </div>
-        `).join("");
+        `;
+        }).join("");
       return `
         <div class="pg-result-card">
           <div class="pg-flex-between" style="gap:0.75rem;flex-wrap:wrap;">
@@ -1033,7 +1285,9 @@ async function initPredictPage() {
               <span class="pg-badge pg-badge-primary">${escapeHtml(modelShort(p.model || payload.model))}</span>
             </div>
           </div>
-          <div class="pg-proba-list">${probaEntries}</div>
+          ${probaEntries
+            ? `<div class="pg-proba-list">${probaEntries}</div>`
+            : '<p class="pg-dim pg-result-note">当前模型不提供类别概率。</p>'}
         </div>
       `;
     }).join("");
@@ -1053,12 +1307,17 @@ async function initPredictPage() {
       showToast("样本不能为空", "warning");
       return;
     }
+    if (samples.length > MAX_PREDICT_BATCH) {
+      showToast(`单次最多提交 ${MAX_PREDICT_BATCH} 条样本`, "warning");
+      return;
+    }
+    const normalizedSamples = samples.map(normalizeSample);
     const model = modelSelect?.value || undefined;
     const res = await api("/api/predict", {
       method: "POST",
-      body: JSON.stringify({ samples, model }),
+      body: JSON.stringify({ samples: normalizedSamples, model }),
     });
-    bumpPredictCount(samples.length);
+    bumpPredictCount(normalizedSamples.length);
     renderPredictions(res);
     showToast(`识别完成 · ${res.count} 条`, "success");
   }
@@ -1116,6 +1375,9 @@ async function initPredictPage() {
             return row;
           });
         }
+      }
+      if (samples.length > MAX_PREDICT_BATCH) {
+        throw new Error(`单次最多提交 ${MAX_PREDICT_BATCH} 条样本`);
       }
       await runPredict(samples);
     } catch (err) {
@@ -1215,7 +1477,7 @@ async function initExperimentsPage() {
           const body = matrix.map((row, i) => {
             const cells = row.map((v) => {
               const intensity = v / (Math.max(...row, 1) || 1);
-              const bg = `rgba(37,99,235,${0.06 + intensity * 0.42})`;
+              const bg = `rgba(15,143,131,${0.06 + intensity * 0.42})`;
               return `<td class="pg-cm-cell" style="background:${bg}">${v}</td>`;
             }).join("");
             return `<tr><th>${escapeHtml(LABEL_DISPLAY[LABEL_ORDER[i]])}</th>${cells}</tr>`;
@@ -1261,8 +1523,20 @@ async function initExperimentsPage() {
           .map(([feature, importance]) => ({ feature, importance: Number(importance) || 0 }))
           .sort((a, b) => b.importance - a.importance)
           .slice(0, 10);
-        fiEmpty?.classList.add("pg-hidden");
-        fiWrap?.classList.remove("pg-hidden");
+        if (typeof Chart === "undefined") {
+          fiWrap?.classList.add("pg-hidden");
+          if (fiEmpty) {
+            fiEmpty.classList.remove("pg-hidden");
+            fiEmpty.innerHTML = emptyHtml(
+              '<path d="M4 19V5"/><path d="M4 19h16"/>',
+              "图表组件未加载",
+              "特征重要性数据已就绪，请检查网络后刷新。"
+            );
+          }
+        } else {
+          fiEmpty?.classList.add("pg-hidden");
+          fiWrap?.classList.remove("pg-hidden");
+        }
         const canvas = document.getElementById("exp-fi-chart");
         if (canvas && typeof Chart !== "undefined") {
           destroyChart("exp-fi");
@@ -1273,7 +1547,7 @@ async function initExperimentsPage() {
               datasets: [{
                 label: "重要性",
                 data: fi.map((x) => Number((x.importance * 100).toFixed(2))),
-                backgroundColor: "rgba(37,99,235,0.55)",
+                backgroundColor: "rgba(15,143,131,0.55)",
                 borderColor: CHART_COLORS.blue,
                 borderWidth: 1,
                 borderRadius: 6,
@@ -1384,7 +1658,7 @@ async function initSettingsPage() {
     if (trainR) trainR.value = s.train_ratio ?? 0.7;
     if (valR) valR.value = s.val_ratio ?? 0.15;
     if (testR) testR.value = s.test_ratio ?? 0.15;
-    if (nPer) nPer.value = s.n_per_class_default ?? 1000;
+    if (nPer) nPer.value = s.n_per_class_default ?? 800;
     if (noise) noise.value = s.noise_default ?? 0.85;
     updateRatioHint();
   } catch (err) {
@@ -1398,7 +1672,7 @@ async function initSettingsPage() {
       train_ratio: Number(trainR?.value || 0.7),
       val_ratio: Number(valR?.value || 0.15),
       test_ratio: Number(testR?.value || 0.15),
-      n_per_class_default: Number(nPer?.value || 1000),
+      n_per_class_default: Number(nPer?.value || 800),
       noise_default: Number(noise?.value || 0.85),
     };
     const sum = payload.train_ratio + payload.val_ratio + payload.test_ratio;

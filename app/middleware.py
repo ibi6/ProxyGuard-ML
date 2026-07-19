@@ -34,8 +34,8 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Attach conservative security headers for a local/demo web app.
 
-    Note: This is not a full multi-tenant hardening suite. CSP is intentionally
-    permissive enough for Tailwind CDN + Chart.js used by the console.
+    Note: This is not a full multi-tenant hardening suite. Chart.js is the only
+    external script allowed by the console policy.
     """
 
     async def dispatch(self, request: Request, call_next) -> Response:
@@ -43,21 +43,31 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+        response.headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+        if request.url.path.startswith("/static/"):
+            response.headers.setdefault(
+                "Cache-Control",
+                "public, max-age=31536000, immutable",
+            )
+        else:
+            response.headers.setdefault("Cache-Control", "no-store")
         response.headers.setdefault(
             "Permissions-Policy",
             "geolocation=(), microphone=(), camera=()",
         )
-        # Allow CDN scripts used by templates; tighten if you self-host assets.
+        # Keep inline styles for dynamic chart/progress widths; scripts stay strict.
         response.headers.setdefault(
             "Content-Security-Policy",
             "; ".join(
                 [
                     "default-src 'self'",
                     "img-src 'self' data: blob:",
-                    "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com",
-                    "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
+                    "style-src 'self' 'unsafe-inline'",
+                    "script-src 'self' https://cdn.jsdelivr.net",
                     "connect-src 'self'",
                     "font-src 'self' data:",
+                    "object-src 'none'",
                     "frame-ancestors 'none'",
                     "base-uri 'self'",
                     "form-action 'self'",

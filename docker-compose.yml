@@ -1,14 +1,31 @@
+name: proxyguard-ml
+
 services:
   proxyguard:
     build: .
     image: proxyguard-ml:local
     ports:
-      - "8000:8000"
+      - "${PROXYGUARD_BIND_HOST:-127.0.0.1}:${PROXYGUARD_PORT:-8000}:8000"
     volumes:
       # Persist datasets, trained models and reports across restarts
       - ./data:/app/data
       - ./models:/app/models
       - ./reports:/app/reports
     environment:
-      - USE_MOCK=false
+      USE_MOCK: "${USE_MOCK:-false}"
+      PROXYGUARD_TOKEN: "${PROXYGUARD_TOKEN:-}"
+      PROXYGUARD_DB_PATH: "${PROXYGUARD_DB_PATH:-data/proxyguard.db}"
+      PROXYGUARD_MAX_UPLOAD_BYTES: "${PROXYGUARD_MAX_UPLOAD_BYTES:-20971520}"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+    init: true
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     restart: unless-stopped

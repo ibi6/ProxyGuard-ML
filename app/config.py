@@ -5,12 +5,50 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env", override=False)
 DATA_DIR = BASE_DIR / "data"
 MODELS_DIR = BASE_DIR / "models"
 REPORTS_DIR = BASE_DIR / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
-DB_PATH = BASE_DIR / "app" / "proxyguard.db"
+
+
+def _env_int(
+    name: str,
+    default: int,
+    *,
+    minimum: int | None = None,
+    maximum: int | None = None,
+) -> int:
+    """Parse a bounded integer environment variable with an actionable error."""
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        value = int(default)
+    else:
+        try:
+            value = int(raw.strip())
+        except ValueError as exc:
+            raise RuntimeError(f"{name} must be an integer, got {raw!r}") from exc
+    if minimum is not None and value < minimum:
+        raise RuntimeError(f"{name} must be >= {minimum}, got {value}")
+    if maximum is not None and value > maximum:
+        raise RuntimeError(f"{name} must be <= {maximum}, got {value}")
+    return value
+
+
+def _env_path(name: str, default: Path) -> Path:
+    """Resolve a configured path relative to the repository root."""
+    raw = os.getenv(name, "").strip()
+    path = Path(raw).expanduser() if raw else Path(default)
+    if not path.is_absolute():
+        path = BASE_DIR / path
+    return path.resolve()
+
+
+DB_PATH = _env_path("PROXYGUARD_DB_PATH", DATA_DIR / "proxyguard.db")
+LEGACY_DB_PATH = BASE_DIR / "app" / "proxyguard.db"
 
 # USE_MOCK=true → simulated metrics (keep false for real training)
 USE_MOCK = os.getenv("USE_MOCK", "false").strip().lower() in {"1", "true", "yes", "on"}
@@ -19,7 +57,12 @@ USE_MOCK = os.getenv("USE_MOCK", "false").strip().lower() in {"1", "true", "yes"
 API_TOKEN = os.getenv("PROXYGUARD_TOKEN", "").strip()
 
 # CSV upload hard cap (bytes)
-MAX_UPLOAD_BYTES = int(os.getenv("PROXYGUARD_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
+MAX_UPLOAD_BYTES = _env_int(
+    "PROXYGUARD_MAX_UPLOAD_BYTES",
+    20 * 1024 * 1024,
+    minimum=1024,
+    maximum=1024 * 1024 * 1024,
+)
 
 RANDOM_SEED = 42
 TRAIN_RATIO = 0.70

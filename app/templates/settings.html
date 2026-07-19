@@ -6,9 +6,9 @@
 {% block page_desc %}种子、划分比例等，保存后下次训练和生成数据会用到{% endblock %}
 
 {% block topbar_actions %}
-<span class="pg-status-pill" id="pg-health-pill">
-  <span class="pg-status-dot" id="pg-health-dot"></span>
-  <span class="hide-sm" id="pg-health-text">检测中…</span>
+<span class="pg-status-pill js-health-pill" id="pg-health-pill" role="status">
+  <span class="pg-status-dot js-health-dot" id="pg-health-dot"></span>
+  <span class="hide-sm js-health-text" id="pg-health-text">检测中…</span>
 </span>
 <button type="submit" form="settings-form" id="btn-settings-save" class="pg-btn pg-btn-primary pg-btn-sm">保存设置</button>
 {% endblock %}
@@ -21,7 +21,7 @@
         <h2 class="pg-card-title">运行参数</h2>
         <p class="pg-card-sub">保存后写入 SQLite，刷新页面仍然有效</p>
       </div>
-      <span class="pg-badge pg-badge-primary">Settings</span>
+      <span class="pg-badge pg-badge-primary">参数</span>
     </div>
 
     <form id="settings-form" class="pg-stack" style="gap:1rem;">
@@ -32,7 +32,7 @@
         </div>
         <div class="pg-field">
           <label class="pg-label" for="set-n">默认每类样本数</label>
-          <input class="pg-input" id="set-n" type="number" min="1" max="50000" value="1000" required />
+          <input class="pg-input" id="set-n" type="number" min="1" max="50000" value="800" required />
         </div>
         <div class="pg-field">
           <label class="pg-label" for="set-noise">默认噪声</label>

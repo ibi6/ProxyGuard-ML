@@ -8,7 +8,7 @@
 
 侧信道集成学习 · FastAPI 控制台 · 可复现实验演示
 
-[架构说明](docs/ARCHITECTURE.md) · [系统设计](docs/system-design.md) · [实验指南](docs/experiment-guide.md)
+[架构说明](docs/ARCHITECTURE.md) · [API](docs/API.md) · [部署](docs/DEPLOYMENT.md) · [测试](docs/TESTING.md) · [优化报告](docs/OPTIMIZATION.md)
 
 <br/>
 
@@ -19,7 +19,7 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-2ea44f?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-0.3.0-111827?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-0.4.0-111827?style=for-the-badge)
 
 </div>
 
@@ -54,7 +54,10 @@ TLS 与现代代理会隐藏载荷内容。**ProxyGuard ML 不做任何载荷解
 - **完整控制台**：生成/上传数据 → 训练（可取消）→ 识别 → 导出实验  
 - **可复现实验**：种子、噪声、划分比例写入 SQLite，训练时生效  
 - **工程护栏**：上传限制、Inf 校验、训练互斥、安全响应头  
-- **CI**：ruff 检查 + pytest（3.11/3.12）+ main 分支 Docker 构建  
+- **严格边界**：显式请求 Schema、预测批量上限、重启任务恢复
+- **响应式控制台**：375 / 768 / 1440px 无页面级横向溢出
+- **三态主题**：跟随系统 / 浅色 / 深色，偏好持久化且图表同步切换
+- **CI**：ruff 检查 + pytest（3.10/3.11/3.12）+ main 分支 Docker 构建
 
 <p align="center">
   <img src="assets/architecture.svg" width="100%" alt="架构图" />
@@ -92,6 +95,9 @@ python -m venv .venv
 
 pip install -U pip
 pip install -r requirements.txt
+
+# 如需开发/测试，可用下一行替换上一行（已包含运行依赖）
+# pip install -r requirements-dev.txt
 
 # 可选：本地环境变量
 cp .env.example .env
@@ -141,6 +147,8 @@ pytest -q
 | `/experiments` | 指标对比与导出 |
 | `/settings` | 种子与划分比例 |
 
+顶部栏的主题入口支持“跟随系统 / 浅色 / 深色”。选择保存在本机浏览器中；系统模式会随设备外观变化，Chart.js 图表无需刷新即可同步配色。
+
 ---
 
 ## 接口一览
@@ -155,7 +163,7 @@ pytest -q
 | POST | `/api/train/{id}/cancel` | 取消训练 |
 | GET | `/api/train` · `/train/{id}` | 任务列表 / 详情 |
 | GET | `/api/models` | 模型与指标 |
-| POST | `/api/predict` | 预测 |
+| POST | `/api/predict` | 预测（完整 17 维，单次 ≤500 条） |
 | GET | `/api/predict/stats` | 预测日志计数 |
 | GET | `/api/experiments` | 实验对比 |
 | GET | `/api/report/export` | 导出报告 |
@@ -198,6 +206,8 @@ docker compose up --build
 # 浏览器打开 http://127.0.0.1:8000
 ```
 
+Compose 默认只发布到 `127.0.0.1`，并持久化 `data/`、`models/`、`reports/`。可通过 `PROXYGUARD_BIND_HOST` 和 `PROXYGUARD_PORT` 显式修改监听地址与端口。
+
 ---
 
 ## 配置项
@@ -207,6 +217,9 @@ docker compose up --build
 | `USE_MOCK` | `false` | 模拟指标路径，正式运行请保持 false |
 | `PROXYGUARD_TOKEN` | 空 | 非空则保护写接口 |
 | `PROXYGUARD_MAX_UPLOAD_BYTES` | 20MB | CSV 大小上限 |
+| `PROXYGUARD_DB_PATH` | `data/proxyguard.db` | SQLite 路径（相对项目根目录） |
+| `PROXYGUARD_BIND_HOST` | `127.0.0.1` | Compose 宿主机绑定地址 |
+| `PROXYGUARD_PORT` | `8000` | Compose 宿主机端口 |
 | `LOG_LEVEL` | `INFO` | 日志级别 |
 
 可将 [`.env.example`](.env.example) 复制为 `.env` 后本地修改。
@@ -220,6 +233,7 @@ ProxyGuard-ML/
 ├── app/                 # FastAPI、服务、ML、页面
 ├── tests/               # pytest
 ├── scripts/             # 离线实验脚本
+├── deploy/              # Nginx 反向代理配置
 ├── docs/                # 架构、建表、设计说明
 ├── assets/              # README 配图
 ├── data/ models/ reports/

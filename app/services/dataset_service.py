@@ -217,7 +217,7 @@ class DatasetService:
     # ---------------------------------------------------------------- generate
     def generate(
         self,
-        n_per_class: int = 1000,
+        n_per_class: int = 800,
         seed: int = RANDOM_SEED,
         noise: float = 0.85,
     ) -> dict[str, Any]:

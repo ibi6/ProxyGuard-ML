@@ -26,7 +26,7 @@ dev: install
 	$(PYTHON) -m pip install -r requirements-dev.txt
 
 lint:
-	$(PYTHON) -m ruff check app tests scripts || $(PYTHON) -m compileall -q app scripts tests
+	$(PYTHON) -m ruff check app tests scripts
 	$(PYTHON) -m compileall -q app scripts tests
 
 test:
@@ -49,5 +49,5 @@ docker-down:
 
 clean:
 	-$(PYTHON) -c "import pathlib,shutil;[shutil.rmtree(p,True) for p in pathlib.Path('.').rglob('__pycache__')]"
-	-rm -f app/proxyguard.db .coverage
+	-rm -f app/proxyguard.db data/proxyguard.db .coverage
 	@echo cleaned

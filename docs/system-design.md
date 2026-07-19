@@ -74,7 +74,7 @@
 | 模板前端 | Jinja2 + 静态 CSS/JS（控制台风格） |
 | ML | scikit-learn、XGBoost、LightGBM |
 | 序列化 | joblib |
-| 持久化 | 本地 CSV / JSON / PNG + SQLite（`app/proxyguard.db`） |
+| 持久化 | 本地 CSV / JSON / PNG + SQLite（`data/proxyguard.db`） |
 | 评估可视化 | matplotlib / seaborn |
 
 ### 3.2.2 逻辑分层
@@ -210,16 +210,17 @@ SQLite 精简表：`train_tasks`、`predict_logs`、`settings`（实现以 `app/
 
 ### 3.4.3 训练任务状态机
 
-`pending` → `running` → `success` / `failed`  
+`running` → `success` / `failed` / `cancelled`
 
 失败时在任务记录中保留错误信息，便于 Web 展示。
 
 ### 3.4.4 预测流程
 
 1. 校验样本字典是否含 17 维特征  
-2. 解析 `model` 参数；缺省时使用当前最优或默认可用模型  
-3. 加载 `models/{name}.joblib`  
-4. 输出 `label`、`proba`（若支持）、所用模型名  
+2. 拒绝 NaN/Inf，单次最多 500 条
+3. 解析 `model` 参数；缺省时使用当前最优或默认可用模型
+4. 加载 `models/{name}.joblib`
+5. 输出 `label`、`proba`（若支持）、所用模型名
 
 ---
 
@@ -256,7 +257,7 @@ SQLite 精简表：`train_tasks`、`predict_logs`、`settings`（实现以 `app/
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/api/predict` | Body: `{"samples":[{...17 features...}], "model": "optional"}` |
+| POST | `/api/predict` | Body: `{"samples":[{...17 features...}], "model": "optional"}`；单次最多 500 条 |
 
 ### 3.5.5 实验与设置
 
@@ -283,7 +284,7 @@ SQLite 精简表：`train_tasks`、`predict_logs`、`settings`（实现以 `app/
 | 模型 | `models/*.joblib` | 可加载估计器 |
 | 指标 | `reports/metrics.json` | 各模型指标与 best_model |
 | 图表 | `reports/figures/*.png` | 论文插图 |
-| 数据库 | `app/proxyguard.db` | 任务与设置（gitignore） |
+| 数据库 | `data/proxyguard.db` | 任务、设置与预测日志（gitignore / Compose 持久化） |
 
 CSV 导入约定：必须含 `label`；特征列与 `FEATURE_COLUMNS` 对齐；未知列忽略策略以实现为准（缺失必要列报 400）。
 

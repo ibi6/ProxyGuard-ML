@@ -3,7 +3,7 @@
 
 Usage (from repo root, with venv activated)::
 
-    python scripts/run_experiments.py --n-per-class 1000 --seed 42
+    python scripts/run_experiments.py --n-per-class 800 --seed 42 --noise 0.85
 
 Verification (smaller sample)::
 
@@ -72,7 +72,7 @@ def _format_metrics_table(metrics_map: dict[str, dict[str, Any]], best: str | No
 
 
 def run_experiments(
-    n_per_class: int = 1000,
+    n_per_class: int = 800,
     seed: int = RANDOM_SEED,
     noise: float = 0.85,
     models: list[str] | None = None,
@@ -145,8 +145,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--n-per-class",
         type=int,
-        default=1000,
-        help="samples per traffic class (default: 1000)",
+        default=800,
+        help="samples per traffic class (default: 800)",
     )
     parser.add_argument(
         "--seed",

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 
-from app.config import USE_MOCK
+from app.config import REPORTS_DIR, USE_MOCK
+from app.security import require_api_token
 from app.services.experiment_service import experiment_service
 from app.services.mock_store import store
 
@@ -21,7 +22,7 @@ def list_experiments() -> dict[str, Any]:
     return experiment_service.list_metrics()
 
 
-@router.get("/report/export")
+@router.get("/report/export", dependencies=[Depends(require_api_token)])
 def export_report(
     download: bool = Query(default=False, description="If true, return zip file"),
 ) -> Any:
@@ -34,6 +35,8 @@ def export_report(
         from pathlib import Path
 
         path = Path(zip_path)
+        if not path.is_absolute():
+            path = Path(REPORTS_DIR) / path.name
         if path.exists():
             return FileResponse(
                 path,

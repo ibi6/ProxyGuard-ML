@@ -10,6 +10,8 @@ ProxyGuard ML 是一个**单体 FastAPI 应用**，包含：
 
 定位为单机、本地优先。默认数据为**合成特征**。
 
+运行数据统一持久化在挂载目录：CSV 与 SQLite 位于 `data/`，模型位于 `models/`，指标和图表位于 `reports/`。旧版 `app/proxyguard.db` 在首次启动 v0.4 时自动迁移。
+
 ## 分层
 
 ```text
@@ -35,6 +37,14 @@ ProxyGuard ML 是一个**单体 FastAPI 应用**，包含：
 | `app/security.py` | 写接口可选 Token |
 | `app/middleware.py` | 访问日志 + 安全响应头 |
 
+## 接口边界
+
+- 请求模型拒绝未知字段，避免拼写错误被静默忽略。
+- 训练模型名限制为内置 8 个模型并按顺序去重。
+- 预测要求完整 17 维有限数，单次最多 500 条。
+- CSV 上传按块读取，默认最大 20MB。
+- 设置字段有显式范围，训练/验证/测试比例合计由服务层校验。
+
 ## 训练请求流程
 
 1. `POST /api/train` 校验模型名  
@@ -42,6 +52,8 @@ ProxyGuard ML 是一个**单体 FastAPI 应用**，包含：
 3. 后台线程执行 `train_all`，回调进度  
 4. 产物：`models/*.joblib`、`reports/metrics.json`、图表  
 5. 前端轮询 `GET /api/train/{task_id}`  
+
+若服务进程在训练中退出，下次启动会把遗留的 `running` 任务标记为 `failed`，避免控制台永久显示运行中。
 
 ## 数据约定
 
@@ -62,3 +74,11 @@ ProxyGuard ML 是一个**单体 FastAPI 应用**，包含：
 | 真实 PCAP 特征 | 导出 17 维 CSV 上传，或在 `app/ml/` 增加提取器 |
 | 登录鉴权 | 扩展 `app/security.py` |
 | 任务队列 | 后续可用 Celery/RQ 替换线程 |
+
+## 前端布局
+
+- 桌面端（>960px）：固定深色侧栏，主区多列网格。
+- 平板/手机（≤960px）：侧栏变为可访问的抽屉导航。
+- 手机（≤640px）：顶部标题与操作分层，字段单列，宽表只在容器内部滚动。
+- 主题：`theme-bootstrap.js` 在样式表前解析本地偏好，`data-theme` 驱动语义 CSS 令牌；`app.js` 负责可访问菜单和 Chart.js 即时换色。
+- 页面、API 和 HTML 使用 `no-store`；带版本号的本地 CSS/JS 使用一年 immutable 缓存。

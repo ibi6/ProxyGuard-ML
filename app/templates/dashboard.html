@@ -6,9 +6,9 @@
 {% block page_desc %}看一眼数据量、模型和最近训练情况{% endblock %}
 
 {% block topbar_actions %}
-<span class="pg-status-pill" id="pg-health-pill">
-  <span class="pg-status-dot" id="pg-health-dot"></span>
-  <span class="hide-sm" id="pg-health-text">检测中…</span>
+<span class="pg-status-pill js-health-pill" id="pg-health-pill" role="status">
+  <span class="pg-status-dot js-health-dot" id="pg-health-dot"></span>
+  <span class="hide-sm js-health-text" id="pg-health-text">检测中…</span>
 </span>
 <button type="button" id="btn-dash-refresh" class="pg-btn pg-btn-secondary pg-btn-sm">刷新</button>
 <a href="/data" class="pg-btn pg-btn-primary pg-btn-sm">生成数据</a>

@@ -19,20 +19,23 @@ from app.api import predict as predict_api
 from app.api import settings as settings_api
 from app.api import train as train_api
 from app.config import USE_MOCK
-from app.db import init_db
+from app.db import init_db, recover_interrupted_tasks
 from app.logging_config import setup_logging
 from app.middleware import RequestLogMiddleware, SecurityHeadersMiddleware
 from app.security import auth_required
 
 logger = logging.getLogger("proxyguard")
 
-APP_VERSION = "0.3.0"
+APP_VERSION = "0.4.0"
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     setup_logging()
     init_db()
+    recovered = recover_interrupted_tasks()
+    if recovered:
+        logger.warning("marked %s interrupted training task(s) as failed", recovered)
     if USE_MOCK:
         logger.warning("USE_MOCK=true — metrics may be simulated; disable for real runs")
     if auth_required():
@@ -69,6 +72,17 @@ app.include_router(experiments_api.router)
 app.include_router(settings_api.router)
 
 
+def _asset_version() -> str:
+    """Return a cache key that changes whenever local CSS or JS changes."""
+    assets = (
+        static_dir / "css" / "app.css",
+        static_dir / "js" / "app.js",
+        static_dir / "js" / "theme-bootstrap.js",
+    )
+    latest = max((path.stat().st_mtime_ns for path in assets if path.exists()), default=0)
+    return f"{APP_VERSION}-{latest:x}"
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(_request: Request, exc: StarletteHTTPException):
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
@@ -76,7 +90,14 @@ async def http_exception_handler(_request: Request, exc: StarletteHTTPException)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(_request: Request, exc: RequestValidationError):
-    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+    # Pydantic includes the rejected input by default; large batches and user
+    # feature values must not be reflected into the response body.
+    public_keys = ("type", "loc", "msg")
+    errors = [
+        {key: item[key] for key in public_keys if key in item}
+        for item in exc.errors()
+    ]
+    return JSONResponse(status_code=422, content={"detail": errors})
 
 
 @app.exception_handler(Exception)
@@ -84,17 +105,20 @@ async def unhandled_exception_handler(_request: Request, exc: Exception):
     logger.exception("unhandled error: %s", exc)
     return JSONResponse(
         status_code=500,
-        content={"detail": "internal server error", "type": type(exc).__name__},
+        content={"detail": "internal server error"},
     )
 
 
 def _page(name: str, request: Request, active: str):
     return templates.TemplateResponse(
+        request,
         name,
         {
             "request": request,
             "active": active,
             "title": "ProxyGuard ML",
+            "app_version": APP_VERSION,
+            "asset_version": _asset_version(),
         },
     )
 

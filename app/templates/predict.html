@@ -6,9 +6,9 @@
 {% block page_desc %}填 17 维特征，看预测类别和概率{% endblock %}
 
 {% block topbar_actions %}
-<span class="pg-status-pill">
-  <span class="pg-status-dot"></span>
-  <span class="hide-sm">服务在线</span>
+<span class="pg-status-pill js-health-pill" role="status">
+  <span class="pg-status-dot js-health-dot"></span>
+  <span class="hide-sm js-health-text">检测中…</span>
 </span>
 <a href="/train" class="pg-btn pg-btn-secondary pg-btn-sm">训练模型</a>
 {% endblock %}
@@ -24,7 +24,7 @@
           <h2 class="pg-card-title">单条识别</h2>
           <p class="pg-card-sub">关键字段可编辑 · 其余特征使用安全默认值</p>
         </div>
-        <span class="pg-badge pg-badge-primary">Single</span>
+        <span class="pg-badge pg-badge-primary">单条</span>
       </div>
       <form id="predict-single-form" class="pg-stack" style="gap:0.9rem;">
         <div class="pg-field">
@@ -42,15 +42,15 @@
           <h2 class="pg-card-title">批量识别</h2>
           <p class="pg-card-sub">JSON 数组或 CSV 文本（可含表头）</p>
         </div>
-        <span class="pg-badge pg-badge-info">Batch</span>
+        <span class="pg-badge pg-badge-info">批量</span>
       </div>
       <label class="pg-label" for="predict-batch">样本文本</label>
-      <textarea id="predict-batch" class="pg-textarea" rows="12" placeholder='[{"pkt_len_mean":620,"iat_mean":0.03,"packets_per_second":40,"pkt_size_entropy":3.5}]&#10;或 CSV：&#10;pkt_len_mean,iat_mean,packets_per_second,pkt_size_entropy&#10;620,0.03,40,3.5'></textarea>
+      <textarea id="predict-batch" class="pg-textarea" rows="12" maxlength="200000" placeholder='[{"pkt_len_mean":620,"iat_mean":0.03,"packets_per_second":40,"pkt_size_entropy":3.5}]&#10;或 CSV：&#10;pkt_len_mean,iat_mean,packets_per_second,pkt_size_entropy&#10;620,0.03,40,3.5'></textarea>
       <div class="pg-mt-4">
         <button type="button" id="btn-predict-batch" class="pg-btn pg-btn-secondary">批量提交</button>
       </div>
       <p class="pg-dim" style="margin:0.85rem 0 0;font-size:0.8rem;">
-        缺失特征将自动补齐默认值，保证 17 维完整后 POST /api/predict。
+        缺失特征将自动补齐默认值；单次最多 500 条，保证 17 维完整后提交。
       </p>
     </div>
   </div>

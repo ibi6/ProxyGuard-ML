@@ -154,7 +154,7 @@ def _sample_class(
 
 
 def generate_synthetic_dataset(
-    n_per_class: int = 1000,
+    n_per_class: int = 800,
     seed: int = RANDOM_SEED,
     noise: float = 0.85,
 ) -> pd.DataFrame:
